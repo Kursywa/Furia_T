@@ -4,7 +4,6 @@ ctypes.windll.user32.SetProcessDPIAware() # workaround for windows, makes pg.dis
 #correct pixel ratio of the screen in windowed mode
 
 pg.init()
-
 width_of_window = 1920
 height_of_window = 1000
 main_window = pg.display.set_mode((width_of_window,height_of_window), pg.HWSURFACE|pg.DOUBLEBUF|pg.RESIZABLE)
@@ -13,6 +12,16 @@ main_window = pg.display.set_mode((width_of_window,height_of_window), pg.HWSURFA
 # pg.display.update()
 
 window_color = (230, 230 , 250)
+def main():
+    game_status = "game"
+
+    running = True
+    while running:
+        show_menu()
+
+        for event in pg.event.get():  
+            if event.type == pg.QUIT:  
+                running = False
 
 def show_menu():
 
@@ -29,7 +38,7 @@ def show_menu():
     highscore_btn = pg.Rect(100,300,400,60)
     quit_btn = pg.Rect(100,400,400,60)
 
-    pic = pg.font.SysFont(None,50).render('Nowa gra', True, title_color, background_color)
+    pic = pg.font.Font(None,50).render('Nowa gra', True, title_color, background_color)
     pic.set_colorkey((background_color))
     main_window.blit(pic, start_btn)
 
@@ -38,20 +47,9 @@ def show_menu():
     # screen.blit(pg.transform.scale(window, window.get_rect().size), (0, 0))
     pg.display.update()
 
-# game_status = "main page" / "instruction" / "game" / "result"
-game_status = "game"
+def create_btn():
+    pass
 
-running = True
-while running:
-    show_menu()
-
-    for event in pg.event.get():  
-        if event.type == pg.QUIT:  
-           running = False
-
-    #main_window.blit(pg.transform.scale(window, window.get_rect().size), (0, 0))
-    #pg.display.update()
-
-
-
+if __name__ == "__main__":
+    main()
 
