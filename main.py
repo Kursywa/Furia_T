@@ -1,35 +1,54 @@
 import pygame as pg
+import ctypes
+ctypes.windll.user32.SetProcessDPIAware() # workaround for windows, makes pg.display.set_mode apply 
+#correct pixel ratio of the screen in windowed mode
 
 pg.init()
-
 width_of_window = 1920
 height_of_window = 1000
 main_window = pg.display.set_mode((width_of_window,height_of_window), pg.HWSURFACE|pg.DOUBLEBUF|pg.RESIZABLE)
+<<<<<<< HEAD
 window = main_window.copy()
+=======
+# window = main_window.copy()
+# main_window.blit(pg.transform.scale(window, window.get_rect().size), (0, 0))
+# pg.display.update()
+
+>>>>>>> 1e2cf0bac7b5a139d5f23c68ff6f154ed762ec0b
 window_color = (230, 230 , 250)
+def main():
+    game_status = "game"
+
+    running = True
+    while running:
+        show_menu()
+
+        for event in pg.event.get():  
+            if event.type == pg.QUIT:  
+                running = False
 
 def show_menu():
 
     # fill the screen with a color to wipe away anything from last frame
-    screen.fill("purple")
+    main_window.fill("purple")
 
     # color pallette
-    title_color = (220, 220, 160)
+    title_color = "red" #(220, 220, 160)
     background_color = "white"
 
     #button init
-    start_btn = pg.rect(100,100,400,60)
-    instruction_btn = pg.rect(100,200,400,60)
-    highscore_btn = pg.rect(100,300,400,60)
-    quit_btn = pg.rect(100,400,400,60)
+    start_btn = pg.Rect(300,100,400,60)
+    instruction_btn = pg.Rect(100,200,400,60)
+    highscore_btn = pg.Rect(100,300,400,60)
+    quit_btn = pg.Rect(100,400,400,60)
 
-    pic = pg.sys_font(None,50).render('Nowa gra', True, title_color, background_color)
+    pic = pg.font.Font(None,50).render('Nowa gra', True, title_color, background_color)
     pic.set_colorkey((background_color))
-    position = ((self.screen_size - pic.get_size()) / 2).astype(int)
-    screen.blit(pic, start_btn)
+    main_window.blit(pic, start_btn)
 
 
     # RENDER YOUR GAME HERE
+<<<<<<< HEAD
 
     # flip() the display to put your work on screen
     pygame.display.flip()
@@ -79,11 +98,20 @@ while running:
         run_game(window, mRNA)
     
     main_window.blit(pg.transform.scale(window, window.get_rect().size), (0, 0))
+=======
+    # screen.blit(pg.transform.scale(window, window.get_rect().size), (0, 0))
+>>>>>>> 1e2cf0bac7b5a139d5f23c68ff6f154ed762ec0b
     pg.display.update()
-    
+
+def create_btn():
+    pass
+
+if __name__ == "__main__":
+    main()
+
+<<<<<<< HEAD
 
 
 
-
-
-
+=======
+>>>>>>> 1e2cf0bac7b5a139d5f23c68ff6f154ed762ec0b
