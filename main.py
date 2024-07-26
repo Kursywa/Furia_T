@@ -1,6 +1,7 @@
 import pygame as pg
 import ctypes
 import ribosome as r
+import RNA 
 
 ctypes.windll.user32.SetProcessDPIAware() # workaround for windows, makes pg.display.set_mode apply 
 #correct pixel ratio of the screen in windowed mode
@@ -47,29 +48,15 @@ def show_menu():
     # RENDER YOUR GAME HERE
 
     # flip() the display to put your work on screen
-    pygame.display.flip()
+    pg.display.flip()
 
     clock.tick(60)  # limits FPS to 60
 
 
 # game_status = "main page" / "instruction" / "game" / "result"
 game_status = "game"
-
+clock = pg.time.Clock()
 running = True
-
-
-class SzkieletmRNA():
-    def __init__(self):
-        self.image = pg.image.load("./images/mRNA.png").convert()
-        self.rect = self.image.get_rect()
-        self.rect.topleft = 700, 800 
-
-
-
-def run_game(window, mRNA):
-    mRNA.rect.left -= 20
-    window.blit(mRNA.image, mRNA.rect)
-    x, y = mRNA.rect.topleft
 
 
 width_of_nucleotide = 40
@@ -83,9 +70,18 @@ small_ribosome.siteE = (small_ribosome.siteP[0] - width_of_codon, small_ribosome
 large_ribosome = r.Ribosome("./images/ribosome.png", 600, 400)
 large_ribosome.rect.move_ip(0, -200)
 
+mRNA = RNA.RNABackbone("./images/mRNA.png", small_ribosome)
+
+codons = pg.sprite.Group()
+sequence = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+sequence_lenght = len(sequence)
+AUG = RNA.Codon(sequence[:3], 0)
+AUG.rect.bottomleft = (small_ribosome.siteP[0], small_ribosome.rect.center[1])
+codons.add(AUG)
 
 
-mRNA = SzkieletmRNA()
+        
+
 while running:
     window.fill(window_color)
 
@@ -96,15 +92,21 @@ while running:
         
         window.blit(large_ribosome.image, large_ribosome.rect)
         window.blit(small_ribosome.image, small_ribosome.rect)
-        run_game(window, mRNA)
+        mRNA.update()
+        window.blit(mRNA.image, mRNA.rect)  
+        codons.update()
+        RNA.add_new_sprite_codons(codons,sequence, sequence_lenght, width_of_window)
+        codons.draw(window)
+        print(codons)
+        pg.draw.line(window, (0 , 0, 255), (small_ribosome.siteP[0], small_ribosome.rect.center[1]), (small_ribosome.siteP[1], small_ribosome.rect.center[1]), 2)
 
     main_window.blit(pg.transform.scale(window, window.get_rect().size), (0, 0))
-    
     pg.display.update()
+    clock.tick(1)
 
 def create_btn():
     pass
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
 
