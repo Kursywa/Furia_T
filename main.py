@@ -1,5 +1,7 @@
 import pygame as pg
 import ctypes
+import ribosome as r
+
 ctypes.windll.user32.SetProcessDPIAware() # workaround for windows, makes pg.display.set_mode apply 
 #correct pixel ratio of the screen in windowed mode
 
@@ -7,18 +9,13 @@ pg.init()
 width_of_window = 1920
 height_of_window = 1000
 main_window = pg.display.set_mode((width_of_window,height_of_window), pg.HWSURFACE|pg.DOUBLEBUF|pg.RESIZABLE)
-<<<<<<< HEAD
 window = main_window.copy()
-=======
-# window = main_window.copy()
 # main_window.blit(pg.transform.scale(window, window.get_rect().size), (0, 0))
 # pg.display.update()
 
->>>>>>> 1e2cf0bac7b5a139d5f23c68ff6f154ed762ec0b
 window_color = (230, 230 , 250)
 def main():
     game_status = "game"
-
     running = True
     while running:
         show_menu()
@@ -48,7 +45,6 @@ def show_menu():
 
 
     # RENDER YOUR GAME HERE
-<<<<<<< HEAD
 
     # flip() the display to put your work on screen
     pygame.display.flip()
@@ -69,15 +65,6 @@ class SzkieletmRNA():
         self.rect.topleft = 700, 800 
 
 
-class Ribosome(pg.sprite.Sprite):
-    def __init__(self, name, width, height):
-        pg.sprite.Sprite.__init__(self)
-        ribosome = pg.image.load(name).convert()
-        pg.Surface.set_colorkey(ribosome, "white")
-        self.image = pg.transform.scale(ribosome, (width,height))
-        self.rect = self.image.get_rect()
-        self.rect.center = (int(main_window.get_width() // 2), int((main_window.get_height()//4) *3 ))
-
 
 def run_game(window, mRNA):
     mRNA.rect.left -= 20
@@ -85,7 +72,19 @@ def run_game(window, mRNA):
     x, y = mRNA.rect.topleft
 
 
-small_ribosome = Ribosome("./images/ribosome.png", 400, 200)
+width_of_nucleotide = 40
+width_of_codon = 180
+
+small_ribosome = r.Ribosome("./images/ribosome.png", 560, 200)
+small_ribosome.siteP = (small_ribosome.rect.center[0] - (width_of_codon/2), small_ribosome.rect.center[0] + (width_of_codon/2))
+small_ribosome.siteA = (small_ribosome.siteP[1], small_ribosome.siteP[1] + width_of_codon)
+small_ribosome.siteE = (small_ribosome.siteP[0] - width_of_codon, small_ribosome.siteP[0])
+
+large_ribosome = r.Ribosome("./images/ribosome.png", 600, 400)
+large_ribosome.rect.move_ip(0, -200)
+
+
+
 mRNA = SzkieletmRNA()
 while running:
     window.fill(window_color)
@@ -94,13 +93,13 @@ while running:
         if event.type == pg.QUIT:  
            running = False
     if game_status == "game":
+        
+        window.blit(large_ribosome.image, large_ribosome.rect)
         window.blit(small_ribosome.image, small_ribosome.rect)
         run_game(window, mRNA)
-    
+
     main_window.blit(pg.transform.scale(window, window.get_rect().size), (0, 0))
-=======
-    # screen.blit(pg.transform.scale(window, window.get_rect().size), (0, 0))
->>>>>>> 1e2cf0bac7b5a139d5f23c68ff6f154ed762ec0b
+    
     pg.display.update()
 
 def create_btn():
@@ -109,9 +108,3 @@ def create_btn():
 if __name__ == "__main__":
     main()
 
-<<<<<<< HEAD
-
-
-
-=======
->>>>>>> 1e2cf0bac7b5a139d5f23c68ff6f154ed762ec0b
