@@ -62,46 +62,31 @@ running = True
 width_of_nucleotide = 40
 width_of_codon = 180
 
-<<<<<<< HEAD
-=======
 # create a small ribosome and scopes of APE sites
->>>>>>> create_ribosomes
 small_ribosome = r.Ribosome("./images/ribosome.png", 560, 200)
 small_ribosome.siteP = (small_ribosome.rect.center[0] - (width_of_codon/2), small_ribosome.rect.center[0] + (width_of_codon/2))
 small_ribosome.siteA = (small_ribosome.siteP[1], small_ribosome.siteP[1] + width_of_codon)
 small_ribosome.siteE = (small_ribosome.siteP[0] - width_of_codon, small_ribosome.siteP[0])
+small_ribosome.siteP
 
-<<<<<<< HEAD
-large_ribosome = r.Ribosome("./images/ribosome.png", 600, 400)
-large_ribosome.rect.move_ip(0, -200)
-
-mRNA = RNA.RNABackbone("./images/mRNA.png", small_ribosome)
-
-codons = pg.sprite.Group()
-sequence = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-sequence_lenght = len(sequence)
-AUG = RNA.Codon(sequence[:3], 0)
-AUG.rect.bottomleft = (small_ribosome.siteP[0], small_ribosome.rect.center[1])
-=======
 # create a large ribosome
 large_ribosome = r.Ribosome("./images/ribosome.png", 600, 400)
 large_ribosome.rect.move_ip(0, -200)
-
-# create a mRNA backbone
-mRNA = RNA.RNABackbone("./images/mRNA.png", small_ribosome)
 
 # get sequence TODO create fasta file with sequences and the header is the name of image of the structure
 sequence = "ACGCGCGCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 sequence_lenght = len(sequence)
 
+# create a mRNA backbone
+mRNA = RNA.RNABackbone("./images/mRNA.png", small_ribosome)
+
 # Create a sprite.Group with first codon and set its position at the site P of small ribosome
 codons = pg.sprite.Group()
 AUG = RNA.Codon(sequence[:3], 0)
 AUG.rect.bottomleft = (small_ribosome.siteP[0], small_ribosome.rect.top -10)
->>>>>>> create_ribosomes
 codons.add(AUG)
 
-
+trna_object = RNA.TRNA("AUG")
         
 
 while running:
@@ -110,21 +95,23 @@ while running:
     for event in pg.event.get():  
         if event.type == pg.QUIT:  
            running = False
-<<<<<<< HEAD
-=======
     
->>>>>>> create_ribosomes
     if game_status == "game":
-        
+        # draw a ribosome
         window.blit(large_ribosome.image, large_ribosome.rect)
         window.blit(small_ribosome.image, small_ribosome.rect)
-        mRNA.update()
-        window.blit(mRNA.image, mRNA.rect)  
-        codons.update()
+        # draw missing codons
         RNA.add_new_sprite_codons(codons,sequence, sequence_lenght, width_of_window)
+        # draw mRNA and codons
+        window.blit(mRNA.image, mRNA.rect)  
         codons.draw(window)
-        print(codons)
+        # update position of mRNA and codons
+        if False:
+            mRNA.update()
+            codons.update()
+        
         pg.draw.line(window, (0 , 0, 255), (small_ribosome.siteP[0], small_ribosome.rect.center[1]), (small_ribosome.siteP[1], small_ribosome.rect.center[1]), 2)
+        window.blit(trna_object.image, (805, 340))
 
     main_window.blit(pg.transform.scale(window, window.get_rect().size), (0, 0))
     pg.display.update()
