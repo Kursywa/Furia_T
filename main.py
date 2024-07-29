@@ -17,7 +17,7 @@ def main():
     height_of_window = 1000
     main_window = pg.display.set_mode((width_of_window,height_of_window), pg.HWSURFACE|pg.DOUBLEBUF|pg.RESIZABLE)
     window = main_window.copy()
-    window_color = (230, 230 , 2)
+    window_color = (230, 230 , 250)
     clock = pg.time.Clock()
 
     # game_status = "main page" / "instruction" / "game" / "result"
