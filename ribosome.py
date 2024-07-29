@@ -1,7 +1,11 @@
 import pygame as pg
 
 class Ribosome(pg.sprite.Sprite):
+    
     def __init__(self, name, width, height):
+        """
+        Create Surface object of the ribosome and its Rect object
+        """
         pg.sprite.Sprite.__init__(self)
         ribosome = pg.image.load(name).convert()
         pg.Surface.set_colorkey(ribosome, "white")
