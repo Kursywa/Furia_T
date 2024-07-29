@@ -100,8 +100,8 @@ class TRNA(pg.sprite.Sprite):
         create tRNA object 
         """
         super().__init__()
-        image_tRNA = pg.image.load("./images/tRNA_test.png").convert()
-        pg.Surface.set_colorkey(image_tRNA, "white")
+        image_tRNA = pg.image.load("./images/trna.png").convert()
+        pg.Surface.set_colorkey(image_tRNA, "black")
         complementary = complementary_sequence(sequence)
         image_anticodon = create_triplet(complementary)
         image_anticodon = pg.transform.flip(image_anticodon, False, True)

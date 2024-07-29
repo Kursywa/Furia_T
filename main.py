@@ -10,10 +10,13 @@ pg.init()
 width_of_window = 1920
 height_of_window = 1000
 main_window = pg.display.set_mode((width_of_window,height_of_window), pg.HWSURFACE|pg.DOUBLEBUF|pg.RESIZABLE)
+window = main_window.copy()
+# main_window.blit(pg.transform.scale(window, window.get_rect().size), (0, 0))
+# pg.display.update()
 
+window_color = (230, 230 , 250)
 def main():
     game_status = "game"
-
     running = True
     while running:
         show_menu()
@@ -119,53 +122,3 @@ def create_btn():
 
 # if __name__ == "__main__":
 #     main()
-
-    # clock.tick(60)  # limits FPS to 60
-
-
-class SzkieletmRNA():
-    def __init__(self):
-        self.image = pg.image.load("./images/mRNA.png").convert()
-        self.rect = self.image.get_rect()
-        self.rect.topleft = 700, 800 
-
-
-class Ribosome(pg.sprite.Sprite):
-    def __init__(self, name, width, height):
-        pg.sprite.Sprite.__init__(self)
-        ribosome = pg.image.load(name).convert()
-        pg.Surface.set_colorkey(ribosome, "white")
-        self.image = pg.transform.scale(ribosome, (width,height))
-        self.rect = self.image.get_rect()
-        self.rect.center = (int(main_window.get_width() // 2), int((main_window.get_height()//4) *3 ))
-
-
-def run_game(window, mRNA):
-    mRNA.rect.left -= 20
-    window.blit(mRNA.image, mRNA.rect)
-    x, y = mRNA.rect.topleft
-
-
-    small_ribosome = Ribosome("./images/ribosome.png", 400, 200)
-    mRNA = SzkieletmRNA()
-    while running:
-        window.fill(window_color)
-
-        for event in pg.event.get():  
-            if event.type == pg.QUIT:  
-                running = False
-        if game_status == "game":
-            window.blit(small_ribosome.image, small_ribosome.rect)
-            run_game(window, mRNA)
-    
-    main_window.blit(pg.transform.scale(window, window.get_rect().size), (0, 0))
-    # screen.blit(pg.transform.scale(window, window.get_rect().size), (0, 0))
-    pg.display.update()
-
-def create_button(screen, x, y, button_width, button_height, font_size, button_text):
-    pass
-
-if __name__ == "__main__":
-    main()
-
-
