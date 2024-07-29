@@ -1,16 +1,32 @@
 import pygame as pg
 
+def makenucleotide(nt):
+    """
+    Load an image of a nucleotide and create Rect object for it
+    """
+    nucleotide = pg.image.load(f"./images/{nt.lower()}_nucleo.png").convert_alpha()
+    nucleotide = pg.transform.scale(nucleotide, (40,70))
+    rect = nucleotide.get_rect()
+    return nucleotide, rect
+
+def create_triplet(sequence, size_of_image=(180,70)):
+    """
+    Create Surface with given nucleotides
+
+    list_of_nucleotide_Rect - a list of tuples with position of bottomleft
+    size_of_image - a size of returned Surface object
+    """
+    list_of_positions = [(10,70), (70,70), (130,70)]
+    image = pg.Surface(size_of_image, pg.SRCALPHA)
+    for i in range(3):
+        nucleotide, rect = makenucleotide(sequence[i])
+        rect.bottomleft = list_of_positions[i]
+        image.blit(nucleotide, rect)
+    return image
+
+
 class Codon(pg.sprite.Sprite):
     
-    def makenucleotide(self, nt):
-        """
-        Load an image of a nucleotide and create Rect object for it
-        """
-        nucleotide = pg.image.load(f"./images/{nt.lower()}_nucleo.png").convert_alpha()
-        nucleotide = pg.transform.scale(nucleotide, (40,70))
-        rect = nucleotide.get_rect()
-        return nucleotide, rect
-
     def __init__(self, sequence,number):
         """
         Create codon  with given nucleotides.
@@ -19,17 +35,7 @@ class Codon(pg.sprite.Sprite):
         self.number - which triplet is it in the sequence
         """
         super().__init__()
-        n1, r1 = self.makenucleotide(sequence[0])
-        r1.bottomleft = (10,70)
-        n2, r2 = self.makenucleotide(sequence[1])
-        r2.bottomleft = (70, 70)
-        n3, r3 = self.makenucleotide(sequence[2])
-        r3.bottomleft = (130,70)
-        image = pg.Surface([180,70], pg.SRCALPHA)
-        image.blit(n1, r1)
-        image.blit(n2, r2)
-        image.blit(n3, r3)
-        self.image = image
+        self.image = create_triplet(sequence)
         self.rect = self.image.get_rect()
         self.number = number
 
@@ -48,6 +54,7 @@ class RNABackbone(pg.sprite.Sprite):
     def __init__(self, name, small_ribosome):
         super().__init__()
         self.image = pg.image.load(name).convert()
+        self.image = pg.transform.scale(self.image, (540,20))
         self.rect = self.image.get_rect()
         self.rect.bottomleft = (small_ribosome.siteP[0] - 10, small_ribosome.rect.top)
     
@@ -70,4 +77,39 @@ def add_new_sprite_codons(codons, sequence, sequence_lenght, width_of_window):
                 codons.add(new_codon)
             else:
                 break
+
+
+
+def complementary_sequence(sequence):
+    s = ""
+    for i in sequence:
+        if i == "A":
+            s += "U"
+        elif i == "U":
+            s += "A"
+        elif i == "G":
+            s += "C"
+        else:
+            s +=  "G"
+    return s
+
+class TRNA(pg.sprite.Sprite):
+
+    def __init__(self, sequence):
+        """
+        create tRNA object 
+        """
+        super().__init__()
+        image_tRNA = pg.image.load("./images/trna.png").convert()
+        pg.Surface.set_colorkey(image_tRNA, "black")
+        complementary = complementary_sequence(sequence)
+        image_anticodon = create_triplet(complementary)
+        image_anticodon = pg.transform.flip(image_anticodon, False, True)
+        image = pg.Surface([300, 360], pg.SRCALPHA)
+        image.blit(image_tRNA, (0,0))
+        image.blit(image_anticodon, (0, 230))
+        self.image = image
+        self.rect = self.image.get_rect()
+
+
 

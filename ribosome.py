@@ -11,4 +11,4 @@ class Ribosome(pg.sprite.Sprite):
         pg.Surface.set_colorkey(ribosome, "white")
         self.image = pg.transform.scale(ribosome, (width,height))
         self.rect = self.image.get_rect()
-        self.rect.center = (int(1920 // 2), int((1000//4) *3 ))
+        self.rect.center = (int(1920 // 2), int((1000//5) *4 ))
