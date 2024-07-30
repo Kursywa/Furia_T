@@ -1,4 +1,5 @@
 import pygame as pg
+import numpy as np
 import ctypes
 import ribosome as r
 import RNA 
@@ -11,7 +12,7 @@ pg.init()
 def main():
 
     width_of_window = 1920
-    height_of_window = 1000
+    height_of_window = 1080
     window_color = (230, 230 , 250)
     window = pg.display.set_mode((width_of_window,height_of_window), pg.HWSURFACE|pg.DOUBLEBUF|pg.RESIZABLE)
     
@@ -49,6 +50,13 @@ def main():
     codons.add(AUG)
     trna_object = RNA.TRNA("AUG")
 
+    sequences = get_sequence_data("seq1.fasta")
+
+    for title, data in sequences:
+        for string in data:
+            print(string, end='')
+        print()
+
     while running:
         window.fill(window_color)
 
@@ -74,7 +82,7 @@ def main():
         pg.draw.line(window, (0 , 0, 255), (small_ribosome.siteP[0], small_ribosome.rect.center[1]), (small_ribosome.siteP[1], small_ribosome.rect.center[1]), 2)
         window.blit(trna_object.image, (805, 340))
 
-
+        
         # main_window.blit(pg.transform.scale(window, window.get_rect().size), (0, 0))
         pg.display.update()
         clock.tick(1)
@@ -106,6 +114,53 @@ def show_menu():
     pg.display.flip()
 
     clock.tick(60)  # limits FPS to 60
+
+def parse_file(file_name):
+    '''function parsing a fasta file, where multiple fasta sequences are located.
+    acts as a genererator that yields tuple of current sequence title and its nucleotide sequence'''
+    
+    with open(file_name , "rt", encoding = 'utf-8') as parser_file:
+        sequence_title = ''
+        sequence_data = ''
+        for line in parser_file:
+            line = line.strip()
+            if line.startswith('>'):
+                if sequence_title:
+                    yield (sequence_title, sequence_data)
+                    sequence_data = ''
+                sequence_title = line  
+            else:
+                sequence_data = sequence_data + line
+        yield (sequence_title, sequence_data)
+
+
+
+def parse_into_codons(sequence):
+    ''' function parsing string sequences to a list of three letter codons'''
+
+    codon_sequence = []
+    x = 0
+    while x < len(sequence):
+        for i in range(3):
+            codon = sequence[x + 1]
+        codon_sequence.append(codon)
+        x += 3
+    return codon_sequence
+
+
+def get_sequence_data(file_name):
+    ''' input -> file name in fasta format ; output -> a list of tuples, where each tuple consists
+    of title and a list of codons. Referencing a single nucleotide in the sequence can be done via
+    unpacking the tuple, and then iterating the list of codons as in 2d array. ex:
+    for title, data in output:
+        print(data[0][0])
+        print(data[1][2])
+    ^code above prints first nucleotide in the sequence, and then the 5th one'''  
+
+    sequence = []
+    for title, data in parse_file(file_name):
+        sequence.append((title,parse_into_codons(data)))
+    return sequence     
 
 
 def create_btn():
