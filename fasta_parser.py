@@ -23,13 +23,8 @@ def _parse_into_codons(sequence):
     ''' function parsing string sequences to a list of three letter codons'''
 
     codon_sequence = []
-    x = 0
-    while x < len(sequence):
-        codon = ''
-        for i in range(3):
-            codon += sequence[x + 1]
-        codon_sequence.append(codon)
-        x += 3
+    for i in range(0, len(sequence), 3):
+        codon_sequence.append(sequence[i:i+3])
     return codon_sequence
 
 
