@@ -56,7 +56,7 @@ class RNABackbone(pg.sprite.Sprite):
         self.image = pg.image.load(name).convert()
         self.image = pg.transform.scale(self.image, (540,20))
         self.rect = self.image.get_rect()
-        self.rect.bottomleft = (small_ribosome.siteP[0] - 10, small_ribosome.rect.top)
+        self.rect.bottomleft = (small_ribosome.siteP.left - 10, small_ribosome.rect.top)
     
     def update(self):
         self.rect.move_ip(-180, 0)
@@ -72,7 +72,7 @@ def add_new_sprite_codons(codons, sequence, sequence_lenght, width_of_window):
             # check if there is space between last Codon and right side of the pygame screen
             # and if sequence is not finished
             if last_sprite.rect.left < width_of_window and (last_sprite.number * 3) != sequence_lenght:
-                new_codon = Codon(sequence[3 * last_sprite.number : 3 * last_sprite.number + 3], last_sprite.number + 1)
+                new_codon = Codon(sequence[3 * last_sprite.number +3: 3 * last_sprite.number + 6], last_sprite.number + 1)
                 new_codon.rect.bottomleft = last_sprite.rect.bottomright
                 codons.add(new_codon)
             else:
@@ -100,16 +100,21 @@ class TRNA(pg.sprite.Sprite):
         create tRNA object 
         """
         super().__init__()
-        image_tRNA = pg.image.load("./images/trna.png").convert()
-        pg.Surface.set_colorkey(image_tRNA, "black")
+        image_tRNA = pg.image.load("./images/trna.png").convert_alpha()
         complementary = complementary_sequence(sequence)
         image_anticodon = create_triplet(complementary)
         image_anticodon = pg.transform.flip(image_anticodon, False, True)
-        image = pg.Surface([300, 360], pg.SRCALPHA)
+        image = pg.Surface([360,300], pg.SRCALPHA)
         image.blit(image_tRNA, (0,0))
         image.blit(image_anticodon, (0, 230))
         self.image = image
         self.rect = self.image.get_rect()
+        self.rect.topleft = (1500, 200)
+        self.codon = sequence
+        #status start / moving / moved / site to site / empty
+        self.status = 'start'
+        self.startposition = self.rect.topleft
 
-
+    def update(self):
+        self.rect.move_ip(-180, 0)
 
