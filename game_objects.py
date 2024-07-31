@@ -1,5 +1,18 @@
 import pygame as pg
 
+class Ribosome(pg.sprite.Sprite):
+    
+    def __init__(self, name, width, height, width_of_window, height_of_window):
+        """
+        Create Surface object of the ribosome and its Rect object
+        """
+        pg.sprite.Sprite.__init__(self)
+        ribosome = pg.image.load(name).convert_alpha()
+        self.image = pg.transform.scale(ribosome, (width,height))
+        self.rect = self.image.get_rect()
+        self.rect.center = (int(width_of_window // 2), int((height_of_window//5) *4 ))
+
+
 def makenucleotide(nt, size_of_image=(40,70)):
     """
     Load an image of given nucleotide and create Rect object for it
@@ -60,7 +73,7 @@ class RNABackbone(pg.sprite.Sprite):
         self.image = pg.image.load(name).convert()
         self.image = pg.transform.scale(self.image, (540,20))
         self.rect = self.image.get_rect()
-        self.rect.bottomleft = (small_ribosome.siteP.left - 10, small_ribosome.rect.top)
+        self.rect.bottomleft = (small_ribosome.siteP.left - 10, small_ribosome.rect.center[1])
     
     def update(self):
         self.rect.move_ip(-180, 0)
@@ -102,7 +115,7 @@ def complementary_sequence(sequence):
 
 class TRNA(pg.sprite.Sprite):
 
-    def __init__(self, sequence):
+    def __init__(self, sequence, position):
         """
         create tRNA object 
         """
@@ -116,12 +129,17 @@ class TRNA(pg.sprite.Sprite):
         image.blit(image_anticodon, (0, 230))
         self.image = image
         self.rect = self.image.get_rect()
-        self.rect.topleft = (1500, 200) # starting position
+        self.rect.topleft = position 
         self.codon = sequence
         #status start (tRNA at starting position) / moving (user drags tRNA) / moved (tRNA is in ribosome) / site to site / empty. 
         self.status = 'start'
         self.lastposition = self.rect.topleft # position before changing it
+        self.first = False
 
     def update(self):
-        self.rect.move_ip(-180, 0)
+        if self.status == 'start':
+            self.kill()
+        elif self.status == 'moved' and not self.first:
+            self.rect.move_ip(-180, 0)
+        
 
