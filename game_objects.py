@@ -13,6 +13,7 @@ class Ribosome(pg.sprite.Sprite):
         self.rect.center = (int(width_of_window // 2), int((height_of_window//5) *4 ))
 
 
+
 def makenucleotide(nt, size_of_image=(40,70)):
     """
     Load an image of given nucleotide and create Rect object for it
@@ -39,8 +40,10 @@ def create_triplet(sequence, size_of_image=(180,70)):
     return image
 
 
+
 class Codon(pg.sprite.Sprite):
-    
+    STILL = 'still'
+    MOVING = 'moving'
     def __init__(self, sequence,number):
         """
         Create codon with given nucleotides.
@@ -52,16 +55,28 @@ class Codon(pg.sprite.Sprite):
         self.image = create_triplet(sequence)
         self.rect = self.image.get_rect()
         self.number = number
+        self.status = self.STILL
+        self.distance = 0
 
-    
     def update(self):
         """
         Update position of the codon. If it is beyond to Pygame screen, it will be killed
         """
-        self.rect.move_ip(-180, 0)
+        if self.status == self.STILL:
+            self.status = self.MOVING
         if self.rect.right < 0:
             self.kill()
-
+    
+    def update_move(self):
+        if self.status == self.MOVING:
+            self.rect.move_ip(-180,0)
+            self.status = self.STILL
+        # if self.status == 'moving':
+        #     self.rect.move_ip(-5,0)
+        #     self.distance += 5
+        #     if self.distance == 180:
+        #         self.status = 'still'
+        #         self.distance = 0
 
 
 class RNABackbone(pg.sprite.Sprite):
@@ -78,7 +93,7 @@ class RNABackbone(pg.sprite.Sprite):
     def update(self):
         self.rect.move_ip(-180, 0)
 
-
+           
 def add_new_sprite_codons(codons, sequence, sequence_lenght, width_of_window):
     """
     Add new Codon objects to Group (codons)  
@@ -95,6 +110,16 @@ def add_new_sprite_codons(codons, sequence, sequence_lenght, width_of_window):
             else:
                 break
 
+
+class OrderedGroup(pg.sprite.Group):
+    def __init__(self):
+        super().__init__()
+        self.last_codon = None
+    
+    def add(self, *sprite):
+        super().add(*sprite)
+        if sprite:
+            self.last_codon = sprite[-1]
 
 
 def complementary_sequence(sequence):
@@ -113,9 +138,16 @@ def complementary_sequence(sequence):
             s +=  "G"
     return s
 
-class TRNA(pg.sprite.Sprite):
 
-    def __init__(self, sequence, position, small_ribosome):
+
+class TRNA(pg.sprite.Sprite):
+    START = 'start'
+    MOVING = 'moving'
+    MOVED = 'moved'
+    SITETOSITE = 'sitetosite'
+    EXIT = 'exit'
+
+    def __init__(self, sequence, position):
         """
         create tRNA object 
         """
@@ -132,30 +164,28 @@ class TRNA(pg.sprite.Sprite):
         self.rect.topleft = position 
         self.codon = sequence
         #status start (tRNA at starting position) / moving (user drags tRNA) / moved (tRNA is in ribosome) / site to site / exit. 
-        self.status = 'start'
+        self.status = self.START
         self.lastposition = self.rect.topleft # position before changing it
-        self.sitePE_left = (small_ribosome.siteP.left, small_ribosome.siteE.left)
 
     def update(self):
-        if self.status == 'start':
+        if self.status == self.START:
             self.kill()
-        elif self.status == 'moved':
-            self.status = 'sitetosite'
+        elif self.status == self.MOVED:
+            self.status = self.SITETOSITE
               
-    def update_move(self):  
-        # if tRNA is at the site E, itt starts leaving ribosome and disappearing
-        if self.status == 'exit':
+    def update_move(self, leftE, leftP):  
+        # if tRNA is at the site E, it starts leaving ribosome and disappearing
+        if self.status == self.EXIT:
             self.rect.move_ip(-5,-2)
             self.image.set_alpha( self.image.get_alpha() - 5)
-            if self.rect.left < self.sitePE_left[1] - 500:
-                self.kill()
-        
-        elif self.status == 'sitetosite':
+            if self.rect.left < leftE - 500:
+                self.kill() 
+        elif self.status == self.SITETOSITE:
             self.rect.move_ip(-5,0)
-            if self.rect.left in self.sitePE_left:
-                if self.rect.left == self.sitePE_left[1]:
-                    self.status = 'exit'
+            if self.rect.left == leftE or self.rect.left == leftP:
+                if self.rect.left == leftE:
+                    self.status = self.EXIT
                 else:
-                    self.status = 'moved'
+                    self.status = self.MOVED
         
 
