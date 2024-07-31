@@ -50,18 +50,22 @@ def main():
     mRNA = RNA.RNABackbone("./images/mRNA.png", small_ribosome)
 
     # get sequence TODO create fasta file with sequences and the header is the name of image of the structure
+    list_of_sequences = get_sequence_data("./seq1.fasta")
+    header, sequence = list_of_sequences[0]
+    print(sequence)
+    
     sequence = "ACGCGCGCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
     sequence_lenght = len(sequence)
 
     # Create a sprite.Group with first codon and set its position at the site P of small ribosome
     codons = pg.sprite.Group()
-    AUG = RNA.Codon(sequence[:3], 0)
+    AUG = RNA.Codon(sequence[0], 0)
     AUG.rect.bottomleft = (small_ribosome.siteP[0], small_ribosome.rect.top -10)
     codons.add(AUG)
 
     #create group of tRNA
     group_of_trna = pg.sprite.Group()
-    group_of_trna.add(RNA.TRNA(sequence[:3]))
+    group_of_trna.add(RNA.TRNA(sequence[0]))
     
 
 
@@ -139,7 +143,7 @@ def main():
             if small_ribosome.nt_index_at_siteA:
                 
                 if small_ribosome.create_new_trna:
-                    group_of_trna.add(RNA.TRNA(sequence[small_ribosome.nt_index_at_siteA:small_ribosome.nt_index_at_siteA + 3]))
+                    group_of_trna.add(RNA.TRNA(sequence[small_ribosome.nt_index_at_siteA : small_ribosome.nt_index_at_siteA + 3]))
                     small_ribosome.create_new_trna = False
                     small_ribosome.nt_index_at_siteA += 3
                 
