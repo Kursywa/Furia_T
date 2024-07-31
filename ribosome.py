@@ -7,8 +7,7 @@ class Ribosome(pg.sprite.Sprite):
         Create Surface object of the ribosome and its Rect object
         """
         pg.sprite.Sprite.__init__(self)
-        ribosome = pg.image.load(name).convert()
-        pg.Surface.set_colorkey(ribosome, "white")
+        ribosome = pg.image.load(name).convert_alpha()
         self.image = pg.transform.scale(ribosome, (width,height))
         self.rect = self.image.get_rect()
         self.rect.center = (int(width_of_window // 2), int((height_of_window//5) *4 ))

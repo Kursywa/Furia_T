@@ -1,19 +1,20 @@
 import pygame as pg
 
-def makenucleotide(nt):
+def makenucleotide(nt, size_of_image=(40,70)):
     """
-    Load an image of a nucleotide and create Rect object for it
+    Load an image of given nucleotide and create Rect object for it
+    nt - a letter for nucleotide 
+    size_of_image - a size of returned Surface object
     """
     nucleotide = pg.image.load(f"./images/{nt.lower()}_nucleo.png").convert_alpha()
-    nucleotide = pg.transform.scale(nucleotide, (40,70))
+    nucleotide = pg.transform.scale(nucleotide, size_of_image)
     rect = nucleotide.get_rect()
     return nucleotide, rect
 
 def create_triplet(sequence, size_of_image=(180,70)):
     """
-    Create Surface with given nucleotides
+    Create and return Surface object with given nucleotides
 
-    list_of_nucleotide_Rect - a list of tuples with position of bottomleft
     size_of_image - a size of returned Surface object
     """
     list_of_positions = [(10,70), (70,70), (130,70)]
@@ -29,7 +30,7 @@ class Codon(pg.sprite.Sprite):
     
     def __init__(self, sequence,number):
         """
-        Create codon  with given nucleotides.
+        Create codon with given nucleotides.
         self.image - Surface object that is drawn
         self.rect - Rect object with coordinates for self.image
         self.number - which triplet is it in the sequence
@@ -52,6 +53,9 @@ class Codon(pg.sprite.Sprite):
 
 class RNABackbone(pg.sprite.Sprite):
     def __init__(self, name, small_ribosome):
+        """
+        Create mRNA. Its position is relative to small_ribosome.
+        """
         super().__init__()
         self.image = pg.image.load(name).convert()
         self.image = pg.transform.scale(self.image, (540,20))
@@ -70,9 +74,9 @@ def add_new_sprite_codons(codons, sequence, sequence_lenght, width_of_window):
         while True:
             last_sprite = codons.sprites()[-1]
             # check if there is space between last Codon and right side of the pygame screen
-            # and if sequence is not finished
-            if last_sprite.rect.left < width_of_window and (last_sprite.number * 3) != sequence_lenght:
-                new_codon = Codon(sequence[3 * last_sprite.number +3: 3 * last_sprite.number + 6], last_sprite.number + 1)
+            # and if last_sprite is not the last codon in sequence
+            if last_sprite.rect.left < width_of_window and last_sprite.number  != (sequence_lenght-1):
+                new_codon = Codon(sequence[last_sprite.number + 1 ], last_sprite.number + 1)
                 new_codon.rect.bottomleft = last_sprite.rect.bottomright
                 codons.add(new_codon)
             else:
@@ -81,6 +85,9 @@ def add_new_sprite_codons(codons, sequence, sequence_lenght, width_of_window):
 
 
 def complementary_sequence(sequence):
+    """
+    Function returns a complementary sequence to a given sequence
+    """
     s = ""
     for i in sequence:
         if i == "A":
@@ -109,11 +116,11 @@ class TRNA(pg.sprite.Sprite):
         image.blit(image_anticodon, (0, 230))
         self.image = image
         self.rect = self.image.get_rect()
-        self.rect.topleft = (1500, 200)
+        self.rect.topleft = (1500, 200) # starting position
         self.codon = sequence
-        #status start / moving / moved / site to site / empty
+        #status start (tRNA at starting position) / moving (user drags tRNA) / moved (tRNA is in ribosome) / site to site / empty. 
         self.status = 'start'
-        self.startposition = self.rect.topleft
+        self.lastposition = self.rect.topleft # position before changing it
 
     def update(self):
         self.rect.move_ip(-180, 0)
