@@ -45,6 +45,7 @@ def main():
     # create a mRNA backbone
     mRNA = RNABackbone("./images/mRNA.png", small_ribosome)
 
+
     # get seqences from file. list_of_sequences is a list of tuples. Each tuple contains a header and a list of codons
     list_of_sequences = get_sequence_data("./seq1.fasta")
     idx = randint(0, len(list_of_sequences) - 1)
