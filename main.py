@@ -32,7 +32,7 @@ def main():
     # sites P/A/E are rect objects 
     small_ribosome.siteP = pg.Rect(small_ribosome.rect.center[0] - (width_of_codon/2), small_ribosome.rect.center[1] - 300, width_of_codon, 300)
     small_ribosome.siteA = pg.Rect(small_ribosome.siteP.right, small_ribosome.rect.center[1] - 300, width_of_codon, 300)
-    small_ribosome.siteE = pg.Rect(small_ribosome.siteP.left + width_of_codon, small_ribosome.rect.center[1] - 300, width_of_codon, 300) 
+    small_ribosome.siteE = pg.Rect(small_ribosome.siteP.left - width_of_codon, small_ribosome.rect.center[1] - 300, width_of_codon, 300) 
     small_ribosome.codon_to_consider = 0 #  index of the codon that is at site A.  
     small_ribosome.first_tRNA = True # informs that first tRNA is not at site P
     small_ribosome.create_new_trna = True 
@@ -100,6 +100,8 @@ def main():
                 # create new tRNA and add it to group_of_trna
                 createtrna(sequence, sequence_lenght, small_ribosome, group_of_trna, game_level)
             
+            movetrna(group_of_trna)
+
             #draw a ribosome
             window.blit(large_ribosome.image, large_ribosome.rect)
             window.blit(small_ribosome.image, small_ribosome.rect)
@@ -110,6 +112,8 @@ def main():
             codons.draw(window)
             group_of_trna.draw(window)
             # update position of mRNA and codons
+            pg.draw.line(window, (67,89,240),(small_ribosome.siteE.left, small_ribosome.siteE.top), (small_ribosome.siteE.left, small_ribosome.siteE.bottom),  3)
+            
 
         pg.display.update()
         clock.tick(60)
@@ -129,13 +133,12 @@ def checkcollision(trna, small_ribosome, sequence, group_of_trna):
         if small_ribosome.first_tRNA:
             if small_ribosome.siteP.colliderect(trna.rect):
                 trna.rect.bottomleft = (small_ribosome.siteP.left, small_ribosome.siteP.bottom - 70)
-                trna.status = 'moved'
-                trna.first = True
+                trna.status = 'first'
                 small_ribosome.first_tRNA = False
                 small_ribosome.codon_to_consider = 1
                 small_ribosome.create_new_trna = True
                 group_of_trna.update()
-                trna.first = False
+                trna.status = 'moved'
                 
 
         # instructions for another tRNAs   
@@ -196,10 +199,15 @@ def createtrna(sequence, sequence_lenght, small_ribosome, group_of_trna, game_le
     if small_ribosome.codon_to_consider != sequence_lenght: 
         trna_to_create = randomcodongenerator(sequence[small_ribosome.codon_to_consider], game_level)
         list_of_positions = givestartingposition(game_level)
-        group_of_trna.add(TRNA(sequence[small_ribosome.codon_to_consider], list_of_positions[0]))
+        group_of_trna.add(TRNA(sequence[small_ribosome.codon_to_consider], list_of_positions[0], small_ribosome))
         for i in range(len(trna_to_create)):
-            group_of_trna.add(TRNA(trna_to_create[i], list_of_positions[i+1]))
+            group_of_trna.add(TRNA(trna_to_create[i], list_of_positions[i+1], small_ribosome))
     small_ribosome.create_new_trna = False
+
+def movetrna(group_of_trna):
+    for trna in group_of_trna:
+        trna.update_move()
+
 
 
 def show_menu():

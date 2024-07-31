@@ -73,7 +73,7 @@ class RNABackbone(pg.sprite.Sprite):
         self.image = pg.image.load(name).convert()
         self.image = pg.transform.scale(self.image, (540,20))
         self.rect = self.image.get_rect()
-        self.rect.bottomleft = (small_ribosome.siteP.left - 10, small_ribosome.rect.center[1])
+        self.rect.bottomleft = (small_ribosome.siteP.left, small_ribosome.rect.center[1])
     
     def update(self):
         self.rect.move_ip(-180, 0)
@@ -115,7 +115,7 @@ def complementary_sequence(sequence):
 
 class TRNA(pg.sprite.Sprite):
 
-    def __init__(self, sequence, position):
+    def __init__(self, sequence, position, small_ribosome):
         """
         create tRNA object 
         """
@@ -131,15 +131,31 @@ class TRNA(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = position 
         self.codon = sequence
-        #status start (tRNA at starting position) / moving (user drags tRNA) / moved (tRNA is in ribosome) / site to site / empty. 
+        #status start (tRNA at starting position) / moving (user drags tRNA) / moved (tRNA is in ribosome) / site to site / exit. 
         self.status = 'start'
         self.lastposition = self.rect.topleft # position before changing it
-        self.first = False
+        self.sitePE_left = (small_ribosome.siteP.left, small_ribosome.siteE.left)
 
     def update(self):
         if self.status == 'start':
             self.kill()
-        elif self.status == 'moved' and not self.first:
-            self.rect.move_ip(-180, 0)
+        elif self.status == 'moved':
+            self.status = 'sitetosite'
+              
+    def update_move(self):  
+        # if tRNA is at the site E, itt starts leaving ribosome and disappearing
+        if self.status == 'exit':
+            self.rect.move_ip(-5,-2)
+            self.image.set_alpha( self.image.get_alpha() - 5)
+            if self.rect.left < self.sitePE_left[1] - 500:
+                self.kill()
+        
+        elif self.status == 'sitetosite':
+            self.rect.move_ip(-5,0)
+            if self.rect.left in self.sitePE_left:
+                if self.rect.left == self.sitePE_left[1]:
+                    self.status = 'exit'
+                else:
+                    self.status = 'moved'
         
 
