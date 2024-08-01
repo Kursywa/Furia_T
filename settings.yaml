@@ -1,9 +1,9 @@
 
 #nucleotides
-A_NORMAL : "./images/a_nucelo.png"
-U_NORMAL : "./images/u_nucelo.png"
-C_NORMAL : "./images/c_nucelo.png"
-G_NORMAL : "./images/g_nucelo.png"
+A_NORMAL : "./images/a_nucleo.png"
+U_NORMAL : "./images/u_nucleo.png"
+C_NORMAL : "./images/c_nucleo.png"
+G_NORMAL : "./images/g_nucleo.png"
 # A_UPSIDEDOWN : 
 # U_UPSIDEDOWN : 
 # C_UPSIDEDOWN : 
@@ -14,7 +14,7 @@ SMALL_RIBOSOME : "./images/small_ribosome.png"
 BIG_RIBOSOME : "./images/big_ribosome.png"
 
 #mRNA matrix and tRNA
-MRNA_CAP : "./iamges/utr5cap.png"
+MRNA_CAP : "./images/utr5cap.png"
 MRNA : "./images/mRNA.png"
 TRNA : "./images/trna.png"
 
