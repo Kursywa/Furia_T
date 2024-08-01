@@ -1,22 +1,21 @@
-import pygame as pg
-import numpy as np
-import ctypes
-from game_objects import Ribosome, Codon, RNABackbone, TRNA, add_new_sprite_codons, OrderedGroup
-from fasta_parser import get_sequence_data
 from random import randint, shuffle
+import ctypes
+import numpy as np
+import pygame as pg
+from game_objects import Ribosome, Codon, RNABackbone,\
+TRNA, add_new_sprite_codons, OrderedGroup, Stopwatch
+from fasta_parser import get_sequence_data
 
-ctypes.windll.user32.SetProcessDPIAware() # workaround for windows, makes pg.display.set_mode apply 
-#correct pixel ratio of the screen in windowed mode
-
-pg.init()
 
 def main():
-
+    ctypes.windll.user32.SetProcessDPIAware() # workaround for windows, makes pg.display.set_mode apply 
+    #correct pixel ratio of the screen in windowed mode
+    pg.init()
     width_of_window = 1920
     height_of_window = 1080
     window_color = (230, 230 , 250)
     window = pg.display.set_mode((width_of_window,height_of_window), pg.HWSURFACE|pg.DOUBLEBUF|pg.RESIZABLE)
-    
+    timer = Stopwatch()
     
     # game_status = "main page" / "instruction" / "game" / "result"
     game_status = "game"
@@ -69,6 +68,7 @@ def main():
         for event in pg.event.get():  
             if event.type == pg.QUIT:  
                 running = False
+                timer.stop_watch() ###
 
             elif event.type == pg.MOUSEBUTTONDOWN:
                 if game_status == 'game':
@@ -83,6 +83,7 @@ def main():
                     game_mousemotion(group_of_trna, event)
         
         if game_status == "game":
+            
             if not small_ribosome.first_tRNA:
                 # if tRNA at site A is correct, change position of codons, mRNA and tRNAs
                 if small_ribosome.siteA_good:                   
@@ -98,7 +99,7 @@ def main():
                 codons.add(AUG)
                 add_new_sprite_codons(codons,sequence, sequence_lenght, width_of_window)
                 do = False
-                
+                timer.start_watch() ###
 
             if small_ribosome.create_new_trna:
                 # create new tRNA and add it to group_of_trna
@@ -120,6 +121,8 @@ def main():
             group_of_trna.draw(window)
             # update position of mRNA and codons
             pg.draw.line(window, (67,89,240),(small_ribosome.siteE.left, small_ribosome.siteE.top), (small_ribosome.siteE.left, small_ribosome.siteE.bottom),  3)
+            timer.display_current_spent_time(window)
+
         pg.display.update()
         clock.tick(60)
 
@@ -242,8 +245,6 @@ def show_menu():
     clock.tick(60)  # limits FPS to 60
 
 
-def create_btn():
-    pass
 
 if __name__ == "__main__":
     main()
