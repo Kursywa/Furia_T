@@ -1,6 +1,8 @@
 from random import randint, shuffle
 import ctypes
 import numpy as np
+import yaml 
+'''needs to be installed -> in your environment use: >pip install pyyaml'''
 import pygame as pg
 from game_objects import Ribosome, Codon, \
 TRNA, add_new_sprite_codons, OrderedGroup, Stopwatch
@@ -40,13 +42,11 @@ def main():
     large_ribosome = Ribosome("./images/big_ribosome.png", 600, 400,width_of_window, height_of_window)
     large_ribosome.rect.bottom = small_ribosome.rect.top + 20
 
-
-
     # get seqences from file. list_of_sequences is a list of tuples. Each tuple contains a header and a list of codons
     list_of_sequences = get_sequence_data("./seq1.fasta")
     idx = randint(0, len(list_of_sequences) - 1)
     header, sequence = list_of_sequences[idx]
-    sequence_lenght = len(sequence)
+    sequence_length = len(sequence)
 
     # Create a sprite.Group with first codon and set its position at the site P of small ribosome
     codons = OrderedGroup()
@@ -59,61 +59,90 @@ def main():
     # 0 = one tRNA, 1 = 3 tRNA
     game_level = 1
 
+    with open("settings.yaml", "r") as f:
+        settings = yaml.safe_load(f)
+   
     do = True 
 
     while running:
-        window.fill(window_color)
+        # draw functions, giving the illusion of window switching
+        if game_status == "game":
+            show_game()
+        elif game_status == "menu":
+            show_menu()
+        elif game_status == "instructions":
+            show_instructions()
 
+        # game event handling
         for event in pg.event.get():  
             if event.type == pg.QUIT:  
                 running = False
                 timer.stop_watch() ###
 
-            elif event.type == pg.MOUSEBUTTONDOWN:
-                if game_status == 'game':
-                    game_mousebuttondown(group_of_trna, event)                                   
-            
-            elif event.type == pg.MOUSEBUTTONUP:
-                if game_status == 'game' and small_ribosome.codon_to_consider != sequence_lenght:
-                    game_mousebuttonup(group_of_trna, small_ribosome, sequence[small_ribosome.codon_to_consider])                
+            if game_status == 'game':
+                if event.type == pg.MOUSEBUTTONDOWN:
+                        game_mousebuttondown(group_of_trna, event)                                   
+                elif event.type == pg.MOUSEBUTTONUP and small_ribosome.codon_to_consider != sequence_length:
+                        game_mousebuttonup(group_of_trna, small_ribosome, sequence[small_ribosome.codon_to_consider])                
+                elif event.type == pg.MOUSEMOTION:
+                        game_mousemotion(group_of_trna, event)        
 
-            elif event.type == pg.MOUSEMOTION:
-                if game_status == 'game':
-                    game_mousemotion(group_of_trna, event)
-        
-        if game_status == "game":
-            
-            if not small_ribosome.first_tRNA:
-                # if tRNA at site A is correct, change position of codons, mRNA and tRNAs
-                if small_ribosome.siteA_good:                   
-                    codons.add_new(sequence)
-                    codons.update_status()
-                    group_of_trna.update()
-                    small_ribosome.siteA_good = False
-            # should be done only once
-            elif do:
-                c = Codon(sequence[0],0, (small_ribosome.siteP[0], small_ribosome.rect.center[1]))
-                codons.add(c)
-                add_new_sprite_codons(codons,sequence, sequence_lenght, width_of_window)
-                do = False
-                timer.start_watch() ###
+def show_game():
+    if not small_ribosome.first_tRNA:
+        # if tRNA at site A is correct, change position of codons, mRNA and tRNAs
+        if small_ribosome.siteA_good:                   
+            codons.add_new(sequence)
+            codons.update_status()
+            group_of_trna.update()
+            small_ribosome.siteA_good = False
+        # should be done only once
+        elif do:
+            c = Codon(sequence[0],0, (small_ribosome.siteP[0], small_ribosome.rect.center[1]))
+            codons.add(c)
+            add_new_sprite_codons(codons,sequence, sequence_length, width_of_window)
+            do = False
+            timer.start_watch() ###
 
-            if small_ribosome.create_new_trna:
-                # create new tRNA and add it to group_of_trna
-                createtrna(sequence, sequence_lenght, small_ribosome, group_of_trna, game_level)
+        if small_ribosome.create_new_trna:
+            # create new tRNA and add it to group_of_trna
+            createtrna(sequence, sequence_length, small_ribosome, group_of_trna, game_level)
 
-            movetrna(group_of_trna, small_ribosome)
-            codons.update()
+        movetrna(group_of_trna, small_ribosome)
+        codons.update()
 
-            window.blit(large_ribosome.image, large_ribosome.rect)
-            window.blit(small_ribosome.image, small_ribosome.rect)
-            codons.draw(window)
-            group_of_trna.draw(window)
+        window.blit(large_ribosome.image, large_ribosome.rect)
+        window.blit(small_ribosome.image, small_ribosome.rect)
+        codons.draw(window)
+        group_of_trna.draw(window)
             # update position of mRNA and codons
-            timer.display_current_spent_time(window)
+        timer.display_current_spent_time(window)
 
-        pg.display.update()
-        clock.tick(60)
+    clock.tick(60)
+    pg.display.update()
+    
+def show_menu():
+
+    # fill the screen with a color to wipe away anything from last frame
+    main_window.fill("purple")
+
+    # color pallette
+    title_color = "red" #(220, 220, 160)
+    background_color = "white"
+
+    #button init
+    start_btn = pg.Rect(300,100,400,60)
+    instruction_btn = pg.Rect(100,200,400,60)
+    highscore_btn = pg.Rect(100,300,400,60)
+    quit_btn = pg.Rect(100,400,400,60)
+
+    pic = pg.font.Font(None,50).render('Nowa gra', True, title_color, background_color)
+    pic.set_colorkey((background_color))
+    main_window.blit(pic, start_btn)
+
+    # flip() the display to put your work on screen
+    pg.display.flip()
+
+    clock.tick(60)  # limits FPS to 60
 
 def game_mousebuttondown(group_of_trna, event):
     # if user clicked on tRNA, which is at starting position, tRNA will be able to follow the cursor
@@ -163,9 +192,9 @@ def randomcodongenerator(codon, game_level):
         lst_random.append(random_codon)
     return lst_random
 
-def createtrna(sequence, sequence_lenght, small_ribosome, group_of_trna, game_level):
+def createtrna(sequence, sequence_length, small_ribosome, group_of_trna, game_level):
     # Number of created tRNA is depending on the game level
-    if small_ribosome.codon_to_consider != sequence_lenght: 
+    if small_ribosome.codon_to_consider != sequence_length: 
         trna_to_create = randomcodongenerator(sequence[small_ribosome.codon_to_consider], game_level)
         list_of_positions = givestartingposition(game_level)
         group_of_trna.add(TRNA(sequence[small_ribosome.codon_to_consider], list_of_positions[0]))
@@ -180,35 +209,12 @@ def movetrna(group_of_trna, small_ribosome):
 
 
 
-
-def show_menu():
-
-    # fill the screen with a color to wipe away anything from last frame
-    main_window.fill("purple")
-
-    # color pallette
-    title_color = "red" #(220, 220, 160)
-    background_color = "white"
-
-    #button init
-    start_btn = pg.Rect(300,100,400,60)
-    instruction_btn = pg.Rect(100,200,400,60)
-    highscore_btn = pg.Rect(100,300,400,60)
-    quit_btn = pg.Rect(100,400,400,60)
-
-    pic = pg.font.Font(None,50).render('Nowa gra', True, title_color, background_color)
-    pic.set_colorkey((background_color))
-    main_window.blit(pic, start_btn)
-
-
-    # RENDER YOUR GAME HERE
-
-    # flip() the display to put your work on screen
-    pg.display.flip()
-
-    clock.tick(60)  # limits FPS to 60
-
-
+def display_image(x_pos,y_pos,image,surface):
+    source_image = pg.image.load(image).convert_alpha()
+    image_rect = source_image.get_rect()
+    image_rect.top = y_pos
+    image_rect.left = x_pos
+    surface.blit(source_image, image_rect)
 
 if __name__ == "__main__":
     main()
