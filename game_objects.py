@@ -6,13 +6,12 @@ aa_dictionary = {'GCU': "./images/alanine.png"}
 
 class Ribosome(pg.sprite.Sprite):
     
-    def __init__(self, name, width, height, width_of_window, height_of_window):
+    def __init__(self, name,  width_of_window, height_of_window):
         """
         Create Surface object of the ribosome and its Rect object
         """
-        pg.sprite.Sprite.__init__(self)
-        ribosome = pg.image.load(name).convert_alpha()
-        self.image = pg.transform.scale(ribosome, (width,height))
+        super().__init__()
+        self.image = pg.image.load(name).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.center = (int(width_of_window // 2), int((height_of_window//5) *4 ))
 
@@ -25,7 +24,6 @@ def makenucleotide(nt, size_of_image=(40,70)):
     size_of_image - a size of returned Surface object
     """
     nucleotide = pg.image.load(f"./images/{nt.lower()}_nucleo.png").convert_alpha()
-    nucleotide = pg.transform.scale(nucleotide, size_of_image)
     rect = nucleotide.get_rect()
     return nucleotide, rect
 
@@ -59,7 +57,6 @@ class Codon(pg.sprite.Sprite):
         triplet = create_triplet(sequence)
         rect_triplet = triplet.get_rect()
         backbone = pg.image.load("./images/mRNA.png").convert_alpha()
-        backbone = pg.transform.scale(backbone, (180,20))
         rect_backbone = backbone.get_rect()
         image = pg.Surface([180, 80], pg.SRCALPHA)
         image.blit(backbone, (0, 70))
@@ -150,12 +147,15 @@ class Aminoacid(pg.sprite.Sprite):
         self.image = pg.image.load(aa_dictionary['GCU']).convert_alpha()
         self.rect = self.image.get_rect()
         self.withtrna = True
+        # informs about position in polypeptide position
         self.position_in_chain = -1
     
     def set_position_relative_to_trna(self, position_of_trna):
+        """ method ensures that aa is next to tRNA """
         self.rect.bottomright = (position_of_trna.right -10, position_of_trna.top + 20)
 
     def update(self):
+        """ method changes position in polypeptide chain """
         if not self.withtrna:
             self.position_in_chain += 1
             self.rect.move_ip(polypeptide_position[self.position_in_chain][0], polypeptide_position[self.position_in_chain][1])
@@ -187,9 +187,10 @@ class TRNA(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = position 
         self.codon = sequence
-        #status start (tRNA at starting position) / moving (user drags tRNA) / moved (tRNA is in ribosome) / site to site / exit. 
+        # status start (tRNA at starting position) / moving (user drags tRNA) / 
+        # moved (tRNA is in ribosome) / site to site (tRNA is moving to the next side ) / exit 
         self.status = self.START
-        self.lastposition = self.rect.topleft # position before changing it
+        self.startingposition = self.rect.topleft # 
         self.aminoacid = aa
         self.aminoacid.set_position_relative_to_trna(self.rect)
 
@@ -223,7 +224,7 @@ class TRNA(pg.sprite.Sprite):
                     self.status = self.MOVED
                     
 
-    def checkcollision(self, small_ribosome, group_of_trna):
+    def checkcollision(self, small_ribosome, group_of_trna, score):
     # check collision of trna and siteA or site P, if True, trna.status will be changed
         # instructions when first tRNA is dragged
         if small_ribosome.first_tRNA:
@@ -237,6 +238,7 @@ class TRNA(pg.sprite.Sprite):
                 self.status = self.MOVED
                 self.aminoacid.withtrna = False
                 self.aminoacid = None
+                score += 30
                 
         # instructions for another tRNAs   
         else:
@@ -246,6 +248,7 @@ class TRNA(pg.sprite.Sprite):
                 small_ribosome.siteA_good = True
                 small_ribosome.create_new_trna = True
                 small_ribosome.codon_to_consider += 1
+                score += 30
 
         
 

@@ -27,7 +27,7 @@ def main():
     width_of_codon = 180
 
     # create a small ribosome
-    small_ribosome = Ribosome("./images/small_ribosome.png", 570, 200, width_of_window, height_of_window)
+    small_ribosome = Ribosome("./images/small_ribosome.png", width_of_window, height_of_window)
     small_ribosome.siteP = pg.Rect(small_ribosome.rect.center[0] - (width_of_codon/2), small_ribosome.rect.center[1] - 300, width_of_codon, 300)
     small_ribosome.siteA = pg.Rect(small_ribosome.siteP.right, small_ribosome.rect.center[1] - 300, width_of_codon, 300)
     small_ribosome.siteE = pg.Rect(small_ribosome.siteP.left - width_of_codon, small_ribosome.rect.center[1] - 300, width_of_codon, 300) 
@@ -37,7 +37,7 @@ def main():
     small_ribosome.siteA_good = False # informs whether the tRNA was correctly selected for the codon in site A
 
     # create a large ribosome and set its position relative to small_ribosome
-    large_ribosome = Ribosome("./images/big_ribosome.png", 600, 400,width_of_window, height_of_window)
+    large_ribosome = Ribosome("./images/big_ribosome.png", width_of_window, height_of_window)
     large_ribosome.rect.bottom = small_ribosome.rect.top + 20
 
 
@@ -62,6 +62,8 @@ def main():
 
     do = True 
 
+    score = 0
+
     while running:
         window.fill(window_color)
 
@@ -76,7 +78,7 @@ def main():
             
             elif event.type == pg.MOUSEBUTTONUP:
                 if game_status == 'game' and small_ribosome.codon_to_consider != sequence_lenght:
-                    game_mousebuttonup(group_of_trna, small_ribosome, sequence[small_ribosome.codon_to_consider])                
+                    game_mousebuttonup(group_of_trna, small_ribosome, sequence[small_ribosome.codon_to_consider], score)                
 
             elif event.type == pg.MOUSEMOTION:
                 if game_status == 'game':
@@ -125,17 +127,18 @@ def game_mousebuttondown(group_of_trna, event):
                 if trna.rect.collidepoint(event.pos) and trna.status == 'start':
                     trna.status = 'moving'
 
-def game_mousebuttonup(group_of_trna, small_ribosome, sequence):
+def game_mousebuttonup(group_of_trna, small_ribosome, sequence, score):
     # check if tRNA was dragged to site P or A of small_ribosome
     for trna in group_of_trna:
                 if trna.status == 'moving' and sequence == trna.codon:
-                    trna.checkcollision(small_ribosome, group_of_trna)
+                    trna.checkcollision(small_ribosome, group_of_trna, score)
                     # trna.aminoacid.set_position_relative_to_trna(trna.rect) 
                     # if trna is not at right site, it comes back to starting position
                 if trna.status == 'moving': 
-                    trna.rect.topleft = trna.lastposition
+                    trna.rect.topleft = trna.startingposition
                     trna.status = 'start' 
                     trna.aminoacid.set_position_relative_to_trna(trna.rect) 
+                    score -= 20
                                    
 
 def game_mousemotion(group_of_trna, event):
