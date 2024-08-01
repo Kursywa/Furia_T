@@ -1,4 +1,7 @@
+from math import floor
 import pygame as pg
+import time
+
 
 class Ribosome(pg.sprite.Sprite):
     
@@ -209,3 +212,54 @@ class TRNA(pg.sprite.Sprite):
 
         
 
+   
+class Stopwatch:
+    ''' class made for handling a stopwatch. Should be used mainly in core 
+    gameloop to track player's time spent on a given sequence or level'''
+
+    def __init__(self):
+        self.start_time = None
+        self.elapsed_time = 0
+        self.is_running = False
+    
+    def start_watch(self):
+        if not self.is_running:
+            self.start_time = time.time()
+            self.is_running = True
+
+    def stop_watch(self):
+        if self.is_running:
+            self.elapsed_time = time.time() - self.start_time
+            self.is_running = False
+
+    def reset_watch(self):
+        self.elapsed_time = 0
+        self.is_running = 0
+
+    def get_current_elapsed_time(self):
+        '''method returns current elapsed time'''
+        total_time = self.elapsed_time
+        if self.is_running:
+            total_time += time.time() - self.start_time
+        return round(total_time)
+
+    def display_current_spent_time(self, surface, in_time = None):
+        '''method draws current elapsed time on a surface provided as argument in the top-left corner of the screen'''
+        if in_time is None:
+            in_time = self.get_current_elapsed_time()
+        # need to refactor this bit
+        minutes = floor(in_time/60)
+        if minutes < 10:
+            minutes = "0" + str(minutes) #conversion of 'minutes' variable from int to string might cause issues
+            # - using both variable types???
+        seconds = in_time % 60
+        if seconds < 10:
+            seconds = "0" + str(seconds)
+        
+        # a  bit hardcoded
+        font = pg.font.SysFont('cambria', 50)
+        timer_text = font.render(f"Czas: {minutes}:{seconds}", True, "black")
+        timer_rect = timer_text.get_rect()
+        timer_rect.top = 0
+        timer_rect.left = 0
+        surface.blit(timer_text, timer_rect)
