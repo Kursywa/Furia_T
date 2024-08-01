@@ -2,7 +2,7 @@ from random import randint, shuffle
 import ctypes
 import numpy as np
 import pygame as pg
-from game_objects import Ribosome, Codon, RNABackbone,\
+from game_objects import Ribosome, Codon, \
 TRNA, add_new_sprite_codons, OrderedGroup, Stopwatch
 from fasta_parser import get_sequence_data
 
