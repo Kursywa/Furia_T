@@ -1,0 +1,40 @@
+
+#nucleotides
+A_NORMAL : "./images/a_nucelo.png"
+U_NORMAL : "./images/u_nucelo.png"
+C_NORMAL : "./images/c_nucelo.png"
+G_NORMAL : "./images/g_nucelo.png"
+# A_UPSIDEDOWN : 
+# U_UPSIDEDOWN : 
+# C_UPSIDEDOWN : 
+# G_UPSIDEDOWN : 
+
+#ribosomes
+SMALL_RIBOSOME : "./images/small_ribosome.png"
+BIG_RIBOSOME : "./images/big_ribosome.png"
+
+#mRNA matrix and tRNA
+MRNA_CAP : "./iamges/utr5cap.png"
+MRNA : "./images/mRNA.png"
+TRNA : "./images/trna.png"
+
+#aminoacids
+ALANINE : "./images/alanine.png"
+ARGININE : "./images/arginine.png"
+ASPARAGINE : "./images/asparagine.png"
+CYSTEINE : "./images/cysteine.png"
+GLUTAMIC_ACID : "./images/glutamic_acid.png"
+GLUTAMINE : "./images/glutamine.png"
+GLYCINE : "./images/glycine.png"
+HISTIDINE : "./images/histidine.png"
+ISOLEUCINE : "./images/isoleucine.png"
+LEUCINE : "./images/leucine.png"
+LYSINE : "./images/lysine.png"
+METHIONINE : "./images/methionine.png"
+PHENYLALANINE : "./images/phenylalanine.png"
+PROLINE : "./images/proline.png"
+SERINE : "./images/serine.png"
+THREONINE : "./images/threonine.png"
+TRYPTOPHAN : "./images/tryptophan.png"
+TYROSINE : "./images/tyrosine.png"
+VALINE : "./images/valine.png"
