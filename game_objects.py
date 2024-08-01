@@ -44,7 +44,7 @@ def create_triplet(sequence, size_of_image=(180,70)):
 class Codon(pg.sprite.Sprite):
     STILL = 'still'
     MOVING = 'moving'
-    def __init__(self, sequence,number):
+    def __init__(self, sequence,number, position_bottomleft):
         """
         Create codon with given nucleotides.
         self.image - Surface object that is drawn
@@ -52,13 +52,21 @@ class Codon(pg.sprite.Sprite):
         self.number - which triplet is it in the sequence
         """
         super().__init__()
-        self.image = create_triplet(sequence)
-        self.rect = self.image.get_rect()
+        triplet = create_triplet(sequence)
+        rect_triplet = triplet.get_rect()
+        backbone = pg.image.load("./images/mRNA.png").convert_alpha()
+        backbone = pg.transform.scale(backbone, (180,20))
+        rect_backbone = backbone.get_rect()
+        image = pg.Surface([180, 80], pg.SRCALPHA)
+        image.blit(backbone, (0, 70))
+        image.blit(triplet, (0, 0))
+        self.image = image
+        self.rect = self.image.get_rect(bottomleft=position_bottomleft)
         self.number = number
         self.status = self.STILL
         self.distance = 0
 
-    def update(self):
+    def update_status(self):
         """
         Update position of the codon. If it is beyond to Pygame screen, it will be killed
         """
@@ -67,33 +75,35 @@ class Codon(pg.sprite.Sprite):
         if self.rect.right < 0:
             self.kill()
     
-    def update_move(self):
-        if self.status == self.MOVING:
-            self.rect.move_ip(-180,0)
-            self.status = self.STILL
-        # if self.status == 'moving':
-        #     self.rect.move_ip(-5,0)
-        #     self.distance += 5
-        #     if self.distance == 180:
-        #         self.status = 'still'
-        #         self.distance = 0
-
-
-class RNABackbone(pg.sprite.Sprite):
-    def __init__(self, name, small_ribosome):
-        """
-        Create mRNA. Its position is relative to small_ribosome.
-        """
-        super().__init__()
-        self.image = pg.image.load(name).convert()
-        self.image = pg.transform.scale(self.image, (540,20))
-        self.rect = self.image.get_rect()
-        self.rect.bottomleft = (small_ribosome.siteP.left, small_ribosome.rect.center[1])
-    
     def update(self):
-        self.rect.move_ip(-180, 0)
+        if self.status == 'moving':
+            self.rect.move_ip(-5,0)
+            self.distance += 5
+            if self.distance == 180:
+                self.status = 'still'
+                self.distance = 0
 
-           
+class OrderedGroup(pg.sprite.Group):
+    def __init__(self):
+        super().__init__()
+        self.last_sprite = None
+    
+    def add(self, *sprite):
+        super().add(*sprite)
+        if sprite:
+            self.last_sprite = sprite[-1]
+    
+    def add_new(self, sequence):
+        if self.last_sprite.number != (len(sequence) -1):
+            c = Codon(sequence[self.last_sprite.number + 1], self.last_sprite.number + 1, self.last_sprite.rect.bottomright)
+            self.add(c)
+    
+    def update_status(self):
+        for sprite in self.sprites():
+            sprite.update_status()
+
+
+
 def add_new_sprite_codons(codons, sequence, sequence_lenght, width_of_window):
     """
     Add new Codon objects to Group (codons)  
@@ -104,23 +114,10 @@ def add_new_sprite_codons(codons, sequence, sequence_lenght, width_of_window):
             # check if there is space between last Codon and right side of the pygame screen
             # and if last_sprite is not the last codon in sequence
             if last_sprite.rect.left < width_of_window and last_sprite.number  != (sequence_lenght-1):
-                new_codon = Codon(sequence[last_sprite.number + 1 ], last_sprite.number + 1)
-                new_codon.rect.bottomleft = last_sprite.rect.bottomright
+                new_codon = Codon(sequence[last_sprite.number + 1 ], last_sprite.number + 1, last_sprite.rect.bottomright)
                 codons.add(new_codon)
             else:
                 break
-
-
-class OrderedGroup(pg.sprite.Group):
-    def __init__(self):
-        super().__init__()
-        self.last_codon = None
-    
-    def add(self, *sprite):
-        super().add(*sprite)
-        if sprite:
-            self.last_codon = sprite[-1]
-
 
 def complementary_sequence(sequence):
     """
@@ -146,6 +143,7 @@ class TRNA(pg.sprite.Sprite):
     MOVED = 'moved'
     SITETOSITE = 'sitetosite'
     EXIT = 'exit'
+    FIRST = 'first'
 
     def __init__(self, sequence, position):
         """
@@ -187,5 +185,27 @@ class TRNA(pg.sprite.Sprite):
                     self.status = self.EXIT
                 else:
                     self.status = self.MOVED
+
+    def checkcollision(self, small_ribosome, group_of_trna):
+    # check collision of trna and siteA or site P, if True, trna.status will be changed
+        # instructions when first tRNA is dragged
+        if small_ribosome.first_tRNA:
+            if small_ribosome.siteP.colliderect(self.rect):
+                self.rect.bottomleft = (small_ribosome.siteP.left, small_ribosome.siteP.bottom - 60)
+                self.status = self.FIRST
+                small_ribosome.first_tRNA = False
+                small_ribosome.codon_to_consider = 1
+                small_ribosome.create_new_trna = True
+                group_of_trna.update()
+                self.status = self.MOVED
+        # instructions for another tRNAs   
+        else:
+            if small_ribosome.siteA.colliderect(self.rect):
+                self.rect.bottomleft = (small_ribosome.siteA.left, small_ribosome.siteP.bottom - 60)
+                self.status = self.MOVED
+                small_ribosome.siteA_good = True
+                small_ribosome.create_new_trna = True
+                small_ribosome.codon_to_consider += 1
+
         
 
