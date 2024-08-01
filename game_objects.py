@@ -2,6 +2,7 @@ from math import floor
 import pygame as pg
 import time
 
+aa_dictionary = {'GCU': "./images/alanine.png"}
 
 class Ribosome(pg.sprite.Sprite):
     
@@ -86,6 +87,8 @@ class Codon(pg.sprite.Sprite):
                 self.status = 'still'
                 self.distance = 0
 
+
+
 class OrderedGroup(pg.sprite.Group):
     def __init__(self):
         super().__init__()
@@ -138,6 +141,26 @@ def complementary_sequence(sequence):
             s +=  "G"
     return s
 
+polypeptide_position = [(-25, -30),(-25, -30),(-25, -30),(-30, -30),  (-20,-40), (-20,-40),(-20,-40),(-40,-40), (-40, -40), (-40, -40), (-50, -30), (-50, -30) ]
+
+
+class Aminoacid(pg.sprite.Sprite):
+    def __init__(self, sequence):
+        super().__init__()
+        self.image = pg.image.load(aa_dictionary['GCU']).convert_alpha()
+        self.rect = self.image.get_rect()
+        self.withtrna = True
+        self.position_in_chain = -1
+    
+    def set_position_relative_to_trna(self, position_of_trna):
+        self.rect.bottomright = (position_of_trna.right -10, position_of_trna.top + 20)
+
+    def update(self):
+        if not self.withtrna:
+            self.position_in_chain += 1
+            self.rect.move_ip(polypeptide_position[self.position_in_chain][0], polypeptide_position[self.position_in_chain][1])
+
+        
 
 
 class TRNA(pg.sprite.Sprite):
@@ -148,7 +171,7 @@ class TRNA(pg.sprite.Sprite):
     EXIT = 'exit'
     FIRST = 'first'
 
-    def __init__(self, sequence, position):
+    def __init__(self, sequence, position, aa):
         """
         create tRNA object 
         """
@@ -167,10 +190,13 @@ class TRNA(pg.sprite.Sprite):
         #status start (tRNA at starting position) / moving (user drags tRNA) / moved (tRNA is in ribosome) / site to site / exit. 
         self.status = self.START
         self.lastposition = self.rect.topleft # position before changing it
+        self.aminoacid = aa
+        self.aminoacid.set_position_relative_to_trna(self.rect)
 
     def update(self):
         if self.status == self.START:
             self.kill()
+            self.aminoacid.kill()
         elif self.status == self.MOVED:
             self.status = self.SITETOSITE
               
@@ -182,12 +208,20 @@ class TRNA(pg.sprite.Sprite):
             if self.rect.left < leftE - 500:
                 self.kill() 
         elif self.status == self.SITETOSITE:
+            if self.aminoacid :
+                if self.rect.left == leftP:                    
+                    self.aminoacid.withtrna = False
+                    self.aminoacid.update()
+                    self.aminoacid = None
+                else:                   
+                    self.aminoacid.rect.move_ip(-5,0)
             self.rect.move_ip(-5,0)
             if self.rect.left == leftE or self.rect.left == leftP:
                 if self.rect.left == leftE:
                     self.status = self.EXIT
                 else:
                     self.status = self.MOVED
+                    
 
     def checkcollision(self, small_ribosome, group_of_trna):
     # check collision of trna and siteA or site P, if True, trna.status will be changed
@@ -201,6 +235,9 @@ class TRNA(pg.sprite.Sprite):
                 small_ribosome.create_new_trna = True
                 group_of_trna.update()
                 self.status = self.MOVED
+                self.aminoacid.withtrna = False
+                self.aminoacid = None
+                
         # instructions for another tRNAs   
         else:
             if small_ribosome.siteA.colliderect(self.rect):
