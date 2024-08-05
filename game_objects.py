@@ -28,6 +28,8 @@ aa_dictionary = {
     'GUA': images_dictionary['VALINE'], 'GUG': images_dictionary['VALINE'], \
     'GCU': images_dictionary['ALANINE'], 'GCC': images_dictionary['ALANINE'], \
     'GCA': images_dictionary['ALANINE'], 'GCG': images_dictionary['ALANINE'], \
+
+    # change if aspartic_acid.png is added
     # 'GAU': images_dictionary['ASPARTIC_ACID'], 'GAC': images_dictionary['ASPARTIC_ACID'], \
     'GAU': images_dictionary['GLUTAMIC_ACID'], 'GAC': images_dictionary['GLUTAMIC_ACID'], \
     
@@ -43,7 +45,7 @@ aa_dictionary = {
     'UGG': images_dictionary['TRYPTOPHAN']
 }
 
-
+# list of motion vectors for aminoacid in polypeptide chain
 polypeptide_position = [(-25, -30),(-25, -30),(-25, -30),(-30, -30),  \
 (-20,-40), (-20,-40),(-20,-40),(-40,-40), (-40, -40), (-40, -40), (-50, -30), (-50, -30) ]
 
@@ -66,7 +68,6 @@ def makenucleotide(nt):
     """
     Load an image of given nucleotide and create Rect object for it
     nt - a letter for nucleotide 
-    size_of_image - a size of returned Surface object
     """
     nucleotide = pg.image.load(images_dictionary[f'{nt}_NORMAL']).convert_alpha()
     rect = nucleotide.get_rect()
@@ -76,7 +77,6 @@ def create_triplet(sequence):
     """
     Create and return Surface object with given nucleotides
 
-    size_of_image - a size of returned Surface object
     """
     list_of_positions = [(10,70), (70,70), (130,70)]
     image = pg.Surface((180,70), pg.SRCALPHA)
@@ -97,6 +97,8 @@ class Codon(pg.sprite.Sprite):
         self.image - Surface object that is drawn
         self.rect - Rect object with coordinates for self.image
         self.number - which triplet is it in the sequence
+        self.status - informs if Codon can move
+        self.distance - how far it has already moved
         """
         super().__init__()
         triplet = create_triplet(sequence)
@@ -122,6 +124,10 @@ class Codon(pg.sprite.Sprite):
             self.kill()
     
     def update(self):
+        """
+        Methos moves codon by 5px to the left.
+        if codon has moved by its own width, its status will be changed.
+        """
         if self.status == self.MOVING:
             self.rect.move_ip(-5,0)
             self.distance += 5
@@ -130,23 +136,36 @@ class Codon(pg.sprite.Sprite):
                 self.distance = 0
 
 
-
+# this class is created to work with sprite.Group of codons
 class OrderedGroup(pg.sprite.Group):
     def __init__(self):
         super().__init__()
+        # store the last added sprite
         self.last_sprite = None
     
     def add(self, *sprite):
+        """
+        Method adds new sprite to group and keep information of last added sprite.
+        """
         super().add(*sprite)
         if sprite:
             self.last_sprite = sprite[-1]
     
     def add_new(self, sequence):
+        """
+        Methods adds new codon if last_sprite wasn't the last codon 
+        in the sequence.
+
+        sequence - list of sequence's codons
+        """
         if self.last_sprite.number != (len(sequence) -1):
             c = Codon(sequence[self.last_sprite.number + 1], self.last_sprite.number + 1, self.last_sprite.rect.bottomright)
             self.add(c)
     
     def update_status(self):
+        """
+        Method performs .update_status() on every codon in group
+        """
         for sprite in self.sprites():
             sprite.update_status()
 
@@ -154,6 +173,10 @@ class Cap(pg.sprite.Sprite):
     STILL = 'still'
     MOVING = 'moving'
     def __init__(self, position):
+        """
+        self.status - informs if Codon can move
+        self.distance - how far it has already moved
+        """
         super().__init__()
         self.image = pg.image.load(images_dictionary['MRNA_CAP']).convert_alpha()
         self.rect = self.image.get_rect(bottomright=position)
@@ -171,6 +194,10 @@ class Cap(pg.sprite.Sprite):
             self.kill()
     
     def update(self):
+        """
+        Methos moves codon by 5px to the left.
+        if cap has moved by codon's width, its status will be changed.
+        """
         if self.status == self.MOVING:
             self.rect.move_ip(-5,0)
             self.distance += 5
@@ -244,6 +271,11 @@ class TRNA(pg.sprite.Sprite):
     def __init__(self, sequence, position, aa):
         """
         create tRNA object 
+        
+        sequence - codon on the basis of which the anticodon is to be created
+        position - the starting position
+        aa - Sprite object of aminoacid for this tRNA
+
         """
         super().__init__()
         image_tRNA = pg.image.load(images_dictionary['TRNA']).convert_alpha()
@@ -260,11 +292,16 @@ class TRNA(pg.sprite.Sprite):
         # status start (tRNA at starting position) / moving (user drags tRNA) / 
         # moved (tRNA is in ribosome) / site to site (tRNA is moving to the next side ) / exit 
         self.status = self.START
+        # keep topleft coordinate of starting position
         self.startingposition = self.rect.topleft # 
         self.aminoacid = aa
         self.aminoacid.set_position_relative_to_trna(self.rect)
 
     def update(self):
+        """
+        Update position of the codon. If it is still in starting position, 
+        it will be killed with its aminoacid
+        """
         if self.status == self.START:
             self.kill()
             self.aminoacid.kill()
@@ -272,6 +309,11 @@ class TRNA(pg.sprite.Sprite):
             self.status = self.SITETOSITE
               
     def update_move(self, leftE, leftP):  
+        """
+        Method handles the movement of tRNA from one site to another and 
+        leaving the ribosome
+        """
+
         # if tRNA is at the site E, it starts leaving ribosome and disappearing
         if self.status == self.EXIT:
             self.rect.move_ip(-5,-2)
