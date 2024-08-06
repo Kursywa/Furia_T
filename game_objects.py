@@ -411,12 +411,14 @@ class Stopwatch:
         surface.blit(timer_text, timer_rect)
 
 class Button():
-    def __init__(self,  pos, text_input, image = None, font = pg.font.SysFont(None,50),
+    def __init__(self,  pos, text_input, image = None, font = None,
                 base_color = pg.Color(('#FFFFFF')), hovering_color = pg.Color(('#66ff66'))):
         self.image = image
         self.x_pos = pos[0]
         self.y_pos = pos[1]
         self.font = font
+        if self.font is None:
+            self.font = pg.font.SysFont(None,50)
         self.base_color, self.hovering_color = base_color, hovering_color
         self.text_input = text_input
         self.text = self.font.render(self.text_input, True, self.base_color)
@@ -430,13 +432,13 @@ class Button():
             screen.blit(self.image, self.rect)
         screen.blit(self.text, self.text_rect)
 
-    def checkForInput(self, position):
+    def check_for_input(self, position):
         if position[0] in range(self.rect.left, self.rect.right) and \
         position[1] in range(self.rect.top, self.rect.bottom):
             return True
         return False
 
-    def changeColor(self, position):
+    def change_color(self, position):
         if position[0] in range(self.rect.left, self.rect.right) and \
             position[1] in range(self.rect.top, self.rect.bottom):
             self.text = self.font.render(self.text_input, True, self.hovering_color)
