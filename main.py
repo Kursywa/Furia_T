@@ -6,11 +6,11 @@ import yaml
 import pygame as pg
 from game_objects import Ribosome, Codon, Aminoacid, \
 TRNA, add_new_sprite_codons, OrderedGroup, Stopwatch, \
-Cap
+Cap, Button
 from fasta_parser import get_sequence_data
 
 
-def main():
+def main_menu():
     ctypes.windll.user32.SetProcessDPIAware() # workaround for windows, makes pg.display.set_mode apply 
     #correct pixel ratio of the screen in windowed mode
     pg.init()
@@ -25,6 +25,58 @@ def main():
     clock = pg.time.Clock()
     running = True
 
+    while running:
+        # draw functions, giving the illusion of window switching
+        if game_status == "game":
+            show_game()
+        elif game_status == "menu":
+            show_menu()
+        elif game_status == "instructions":
+            show_instructions()
+
+        # menu event handling
+        for event in pg.event.get():  
+            if event.type == pg.QUIT:  
+                running = False
+
+            # if game_status == 'game':
+            #     if event.type == pg.MOUSEBUTTONDOWN:
+            #             game_mousebuttondown(group_of_trna, event)                                   
+            #     elif event.type == pg.MOUSEBUTTONUP and small_ribosome.codon_to_consider != sequence_length:
+            #             game_mousebuttonup(group_of_trna, small_ribosome, sequence[small_ribosome.codon_to_consider])                
+            #     elif event.type == pg.MOUSEMOTION:
+            #             game_mousemotion(group_of_trna, event)        
+
+            # elif event.type == pg.MOUSEMOTION:
+            #     if game_status == 'game':
+            #         game_mousemotion(group_of_trna, event)
+        
+    
+def show_menu():
+
+    # fill the screen with a color to wipe away anything from last frame
+    main_window.fill("purple")
+
+    # color pallette
+    title_color = "red" #(220, 220, 160)
+    background_color = "white"
+
+    #button init
+    start_btn = pg.Rect(300,100,400,60)
+    instruction_btn = pg.Rect(100,200,400,60)
+    highscore_btn = pg.Rect(100,300,400,60)
+    quit_btn = pg.Rect(100,400,400,60)
+
+    pic = pg.font.Font(None,50).render('Nowa gra', True, title_color, background_color)
+    pic.set_colorkey((background_color))
+    main_window.blit(pic, start_btn)
+
+    # flip() the display to put your work on screen
+    pg.display.flip()
+
+    clock.tick(60)  # limits FPS to 60
+
+def show_game():
     width_of_nucleotide = 40
     height_of_nucleotide = 70
     width_of_codon = 180
@@ -62,41 +114,12 @@ def main():
 
     with open("settings.yaml", "r") as f:
         settings = yaml.safe_load(f)
-   
+
     # ensure that statement are done oly once in the first iteration of while loop
     do = True 
 
-
-    while running:
-        # draw functions, giving the illusion of window switching
-        if game_status == "game":
-            show_game()
-        elif game_status == "menu":
-            show_menu()
-        elif game_status == "instructions":
-            show_instructions()
-
-        # game event handling
-        for event in pg.event.get():  
-            if event.type == pg.QUIT:  
-                running = False
-                timer.stop_watch() ###
-
-            if game_status == 'game':
-                if event.type == pg.MOUSEBUTTONDOWN:
-                        game_mousebuttondown(group_of_trna, event)                                   
-                elif event.type == pg.MOUSEBUTTONUP and small_ribosome.codon_to_consider != sequence_length:
-                        game_mousebuttonup(group_of_trna, small_ribosome, sequence[small_ribosome.codon_to_consider])                
-                elif event.type == pg.MOUSEMOTION:
-                        game_mousemotion(group_of_trna, event)        
-
-            elif event.type == pg.MOUSEMOTION:
-                if game_status == 'game':
-                    game_mousemotion(group_of_trna, event)
-        
-        if game_status == "game":
-            
-            if not small_ribosome.first_tRNA:
+while running:
+if not small_ribosome.first_tRNA:
                 # if tRNA at site A is correct, change position of codons, 
                 # tRNAs and aminoacids
                 if small_ribosome.siteA_good:                   
@@ -137,30 +160,6 @@ def main():
 
     clock.tick(60)
     pg.display.update()
-    
-def show_menu():
-
-    # fill the screen with a color to wipe away anything from last frame
-    main_window.fill("purple")
-
-    # color pallette
-    title_color = "red" #(220, 220, 160)
-    background_color = "white"
-
-    #button init
-    start_btn = pg.Rect(300,100,400,60)
-    instruction_btn = pg.Rect(100,200,400,60)
-    highscore_btn = pg.Rect(100,300,400,60)
-    quit_btn = pg.Rect(100,400,400,60)
-
-    pic = pg.font.Font(None,50).render('Nowa gra', True, title_color, background_color)
-    pic.set_colorkey((background_color))
-    main_window.blit(pic, start_btn)
-
-    # flip() the display to put your work on screen
-    pg.display.flip()
-
-    clock.tick(60)  # limits FPS to 60
 
 def game_mousebuttondown(group_of_trna, event):
     # if user clicked on tRNA, which is at starting position, tRNA will be able to follow the cursor
@@ -239,12 +238,15 @@ def movetrna(group_of_trna, small_ribosome):
 
 
 
-def display_image(x_pos,y_pos,image,surface):
-    source_image = pg.image.load(image).convert_alpha()
-    image_rect = source_image.get_rect()
-    image_rect.top = y_pos
-    image_rect.left = x_pos
-    surface.blit(source_image, image_rect)
+# def create_button(x_pos, y_pos, surface, image = None, text = None):
+#     if not image:
+#         btn_data = pg.font.SysFont(None,50)
+#         btn_rect = btn_font.get_rect()
+#     else:    
+#         btn_data = pg.image.load(image).convert_alpha()
+#         btn_rect = source_image.get_rect()
+#     image_rect.topleft = (x_pos,y_pos)
+#     surface.blit(btn_data, btn_rect)
 
 if __name__ == "__main__":
-    main()
+    main_menu()
