@@ -11,12 +11,13 @@ from fasta_parser import get_sequence_data
 
 
 def main_menu():
-    ctypes.windll.user32.SetProcessDPIAware() # workaround for windows, makes pg.display.set_mode apply 
-    #correct pixel ratio of the screen in windowed mode
+    ctypes.windll.user32.SetProcessDPIAware() # workaround for windows, makes 
+    # pg.display.set_mode apply correct pixel ratio of the screen in windowed mode
     pg.init()
     width_of_window = 1920
     height_of_window = 1080
-    window = pg.display.set_mode((width_of_window,height_of_window), pg.HWSURFACE|pg.DOUBLEBUF|pg.RESIZABLE)
+    window = pg.display.set_mode((width_of_window,height_of_window),
+     pg.HWSURFACE|pg.DOUBLEBUF|pg.RESIZABLE)
 
     window_color = (230, 230 , 250)
     # game_status = "main page" / "instruction" / "game" / "result"
@@ -61,14 +62,14 @@ def play_game(width_of_window, height_of_window, window):
     height_of_nucleotide = 70
     width_of_codon = 180
 
-    # create a small ribosome 
+    # create a small ribosome
     small_ribosome = Ribosome("./images/small_ribosome.png", width_of_window, height_of_window)
     small_ribosome.siteP = pg.Rect(small_ribosome.rect.center[0] - (width_of_codon/2), small_ribosome.rect.center[1] - 300, width_of_codon, 300)
     small_ribosome.siteA = pg.Rect(small_ribosome.siteP.right, small_ribosome.rect.center[1] - 300, width_of_codon, 300)
-    small_ribosome.siteE = pg.Rect(small_ribosome.siteP.left - width_of_codon, small_ribosome.rect.center[1] - 300, width_of_codon, 300) 
-    small_ribosome.codon_to_consider = 0 #  index of the codon that is considered  
+    small_ribosome.siteE = pg.Rect(small_ribosome.siteP.left - width_of_codon, small_ribosome.rect.center[1] - 300, width_of_codon, 300)
+    small_ribosome.codon_to_consider = 0 #  index of the codon that is considered
     small_ribosome.first_tRNA = True # informs that first tRNA is not at site P
-    small_ribosome.create_new_trna = True 
+    small_ribosome.create_new_trna = True
     small_ribosome.siteA_good = False # informs whether the tRNA was correctly selected for the codon in site A
 
     # create a large ribosome and set its position relative to small_ribosome
@@ -103,9 +104,9 @@ def play_game(width_of_window, height_of_window, window):
     while True:
         window.fill((230,230,230))
         if not small_ribosome.first_tRNA:
-            # if tRNA at site A is correct, change position of codons, 
+            # if tRNA at site A is correct, change position of codons,
             # tRNAs and aminoacids
-            if small_ribosome.siteA_good:                   
+            if small_ribosome.siteA_good:
                 codons.add_new(sequence)
                 codons.update_status()
                 group_of_trna.update()
@@ -144,12 +145,12 @@ def play_game(width_of_window, height_of_window, window):
         pg.display.update()
 
         # event handling
-        for event in pg.event.get():  
-            if event.type == pg.QUIT:  
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
                 timer.reset_watch() ###
                 pg.quit()
             elif event.type == pg.MOUSEBUTTONDOWN:
-                game_mousebuttondown(group_of_trna, event)                                   
+                game_mousebuttondown(group_of_trna, event)
             elif event.type == pg.MOUSEBUTTONUP and \
                 small_ribosome.codon_to_consider != sequence_length:
                 game_mousebuttonup(group_of_trna, small_ribosome, sequence[small_ribosome.codon_to_consider])                
@@ -172,7 +173,6 @@ def game_mousebuttonup(group_of_trna, small_ribosome, sequence):
             trna.rect.topleft = trna.startingposition
             trna.status = 'start'
             trna.aminoacid.set_position_relative_to_trna(trna.rect)
-                                   
 
 def game_mousemotion(group_of_trna, event):
     # change position of tRNA that is being dragged by player
@@ -203,7 +203,8 @@ def randomcodongenerator(codon, game_level):
             random_codon += nt[randint(0,3)]
             random_codon += nt[randint(0,3)]
             random_codon += nt[randint(0,3)]
-            if random_codon != codon and random_codon not in lst_random and random_codon not in stop_codons:
+            if random_codon != codon and random_codon not in lst_random \
+                and random_codon not in stop_codons:
                 break
         lst_random.append(random_codon)
     return lst_random
@@ -212,7 +213,8 @@ def createtrna(sequence, sequence_length, small_ribosome, group_of_trna, game_le
     # Number of created tRNA with aminoacid is depending on the game level
     if small_ribosome.codon_to_consider != sequence_length: 
         # return list of codons for additional tRNAS
-        trna_to_create = randomcodongenerator(sequence[small_ribosome.codon_to_consider], game_level)
+        trna_to_create = randomcodongenerator(sequence[small_ribosome.codon_to_consider],
+         game_level)
         # return list of positions for right and additional tRNAs
         list_of_positions = givestartingposition(game_level)
         aa = Aminoacid(sequence[small_ribosome.codon_to_consider])

@@ -28,11 +28,7 @@ aa_dictionary = {
     'GUA': images_dictionary['VALINE'], 'GUG': images_dictionary['VALINE'], \
     'GCU': images_dictionary['ALANINE'], 'GCC': images_dictionary['ALANINE'], \
     'GCA': images_dictionary['ALANINE'], 'GCG': images_dictionary['ALANINE'], \
-
-    # change if aspartic_acid.png is added
-    # 'GAU': images_dictionary['ASPARTIC_ACID'], 'GAC': images_dictionary['ASPARTIC_ACID'], \
-    'GAU': images_dictionary['GLUTAMIC_ACID'], 'GAC': images_dictionary['GLUTAMIC_ACID'], \
-    
+    'GAU': images_dictionary['ASPARTIC_ACID'], 'GAC': images_dictionary['ASPARTIC_ACID'], \
     'GAA': images_dictionary['GLUTAMIC_ACID'], 'GAG': images_dictionary['GLUTAMIC_ACID'], \
     'GGU': images_dictionary['GLYCINE'], 'GGC': images_dictionary['GLYCINE'], \
     'GGA': images_dictionary['GLYCINE'], 'GGG': images_dictionary['GLYCINE'], \

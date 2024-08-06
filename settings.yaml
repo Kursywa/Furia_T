@@ -4,10 +4,10 @@ A_NORMAL : "./images/a_nucleo.png"
 U_NORMAL : "./images/u_nucleo.png"
 C_NORMAL : "./images/c_nucleo.png"
 G_NORMAL : "./images/g_nucleo.png"
-# A_UPSIDEDOWN : 
-# U_UPSIDEDOWN : 
-# C_UPSIDEDOWN : 
-# G_UPSIDEDOWN : 
+A_UPSIDEDOWN : "./images/a_antinucleo.png"
+U_UPSIDEDOWN : "./images/u_antinucleo.png"
+C_UPSIDEDOWN : "./images/c_antinucleo.png"
+G_UPSIDEDOWN : "./images/g_antinucleo.png"
 
 #ribosomes
 SMALL_RIBOSOME : "./images/small_ribosome.png"
@@ -22,6 +22,7 @@ TRNA : "./images/trna.png"
 ALANINE : "./images/alanine.png"
 ARGININE : "./images/arginine.png"
 ASPARAGINE : "./images/asparagine.png"
+ASPARTIC_ACID : "./images/aspartic_acid.png"
 CYSTEINE : "./images/cysteine.png"
 GLUTAMIC_ACID : "./images/glutamic_acid.png"
 GLUTAMINE : "./images/glutamine.png"
