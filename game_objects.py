@@ -386,7 +386,7 @@ class Stopwatch:
 
     def reset_watch(self):
         self.elapsed_time = 0
-        self.is_running = 0
+        self.is_running = False
 
     def get_current_elapsed_time(self):
         '''method returns current elapsed time'''

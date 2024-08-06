@@ -1,7 +1,7 @@
 from random import randint, shuffle
 import ctypes
 import numpy as np
-import yaml 
+import yaml
 '''needs to be installed -> in your environment use: >pip install pyyaml'''
 import pygame as pg
 from game_objects import Ribosome, Codon, Aminoacid, \
@@ -56,6 +56,7 @@ def main_menu():
         pg.display.update()
 
 def play_game(width_of_window, height_of_window, window):
+    
     width_of_nucleotide = 40
     height_of_nucleotide = 70
     width_of_codon = 180
@@ -91,6 +92,7 @@ def play_game(width_of_window, height_of_window, window):
     # 0 = one tRNA, 1 = 3 tRNA
     game_level = 1
 
+    clock = pg.time.Clock()
     with open("settings.yaml", "r") as f:
         settings = yaml.safe_load(f)
 
@@ -99,6 +101,7 @@ def play_game(width_of_window, height_of_window, window):
     # ensure that statement are done oly once in the first iteration of while loop
     do = True
     while True:
+        window.fill((230,230,230))
         if not small_ribosome.first_tRNA:
             # if tRNA at site A is correct, change position of codons, 
             # tRNAs and aminoacids
@@ -111,15 +114,15 @@ def play_game(width_of_window, height_of_window, window):
             # should be done only once
             # Create cap and first codon. Time begins to be measured
         elif do:
-                cap = Cap((small_ribosome.siteP[0], small_ribosome.rect.center[1]))
-                codons.add(cap)
-                c = Codon(sequence[0],0, (small_ribosome.siteP[0], \
-                small_ribosome.rect.center[1]))
-                codons.add(c)
-                add_new_sprite_codons(codons,sequence, sequence_length, \
-                width_of_window)
-                do = False
-                timer.start_watch() ###
+            cap = Cap((small_ribosome.siteP[0], small_ribosome.rect.center[1]))
+            codons.add(cap)
+            c = Codon(sequence[0],0, (small_ribosome.siteP[0], \
+            small_ribosome.rect.center[1]))
+            codons.add(c)
+            add_new_sprite_codons(codons,sequence, sequence_length, \
+            width_of_window)
+            do = False
+            timer.start_watch() ###
 
         if small_ribosome.create_new_trna:
             # create new tRNA and add it to group_of_trna
@@ -137,26 +140,38 @@ def play_game(width_of_window, height_of_window, window):
         group_of_aa.draw(window)
         # update position of mRNA and codons
         timer.display_current_spent_time(window)
+        clock.tick(60)
+        pg.display.update()
 
-    # clock.tick(60)
-    pg.display.update()
+        # event handling
+        for event in pg.event.get():  
+            if event.type == pg.QUIT:  
+                timer.reset_watch() ###
+                pg.quit()
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                game_mousebuttondown(group_of_trna, event)                                   
+            elif event.type == pg.MOUSEBUTTONUP and \
+                small_ribosome.codon_to_consider != sequence_length:
+                game_mousebuttonup(group_of_trna, small_ribosome, sequence[small_ribosome.codon_to_consider])                
+            elif event.type == pg.MOUSEMOTION:
+                game_mousemotion(group_of_trna, event)
 
 def game_mousebuttondown(group_of_trna, event):
     # if user clicked on tRNA, which is at starting position, tRNA will be able to follow the cursor
     for trna in group_of_trna:
-                if trna.rect.collidepoint(event.pos) and trna.status == 'start':
-                    trna.status = 'moving'
+        if trna.rect.collidepoint(event.pos) and trna.status == 'start':
+            trna.status = 'moving'
 
 def game_mousebuttonup(group_of_trna, small_ribosome, sequence):
     # check if tRNA was dragged to site P or A of small_ribosome
     for trna in group_of_trna:
-                if trna.status == 'moving' and sequence == trna.codon:
-                    trna.checkcollision(small_ribosome, group_of_trna)
-                # if trna is not at right site, it comes back to starting position
-                if trna.status == 'moving': 
-                    trna.rect.topleft = trna.startingposition
-                    trna.status = 'start' 
-                    trna.aminoacid.set_position_relative_to_trna(trna.rect) 
+        if trna.status == 'moving' and sequence == trna.codon:
+            trna.checkcollision(small_ribosome, group_of_trna)
+        # if trna is not at right site, it comes back to starting position
+        if trna.status == 'moving':
+            trna.rect.topleft = trna.startingposition
+            trna.status = 'start'
+            trna.aminoacid.set_position_relative_to_trna(trna.rect)
                                    
 
 def game_mousemotion(group_of_trna, event):
