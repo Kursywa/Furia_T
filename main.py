@@ -110,16 +110,21 @@ def play_game(width_of_window, height_of_window, window, screen_background_color
                 group_of_trna.update()
                 group_of_aa.update()
                 small_ribosome.siteA_good = False
+                # only 7 codons can fit into the main screen, with the last one being on the site A,
+                # so the loop breaks after reaching this number of codons in a sprite group
+                if len(codons.sprites()) == 7:
+                    break
             # should be done only once
             # Create cap and first codon. Time begins to be measured
         elif do:
             cap = Cap((small_ribosome.siteP[0], small_ribosome.rect.center[1]))
             codons.add(cap)
             c = Codon(sequence[0],0, (small_ribosome.siteP[0], \
-            small_ribosome.rect.center[1]))
+                small_ribosome.rect.center[1]))
             codons.add(c)
+            ####
             add_new_sprite_codons(codons,sequence, sequence_length, \
-            width_of_window)
+                width_of_window)
             do = False
             timer.start_watch() ###
 
@@ -157,6 +162,8 @@ def play_game(width_of_window, height_of_window, window, screen_background_color
         timer.display_current_spent_time(window)
         clock.tick(60)
         pg.display.update()
+    print("game ended")
+
 
 def game_mousebuttondown(group_of_trna, event):
     # if user clicked on tRNA, which is at starting position, tRNA will be able to follow the cursor
