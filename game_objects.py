@@ -60,16 +60,19 @@ class Ribosome(pg.sprite.Sprite):
 
 
 
-def makenucleotide(nt):
+def makenucleotide(nt, is_anticodon):
     """
     Load an image of given nucleotide and create Rect object for it
     nt - a letter for nucleotide 
     """
-    nucleotide = pg.image.load(images_dictionary[f'{nt}_NORMAL']).convert_alpha()
+    if is_anticodon:
+        nucleotide = pg.image.load(images_dictionary[f'{nt}_UPSIDEDOWN']).convert_alpha() 
+    else:
+        nucleotide = pg.image.load(images_dictionary[f'{nt}_NORMAL']).convert_alpha()
     rect = nucleotide.get_rect()
     return nucleotide, rect
 
-def create_triplet(sequence):
+def create_triplet(sequence, is_anticodon = False):
     """
     Create and return Surface object with given nucleotides
 
@@ -77,7 +80,7 @@ def create_triplet(sequence):
     list_of_positions = [(10,70), (70,70), (130,70)]
     image = pg.Surface((180,70), pg.SRCALPHA)
     for i in range(3):
-        nucleotide, rect = makenucleotide(sequence[i])
+        nucleotide, rect = makenucleotide(sequence[i], is_anticodon)
         rect.bottomleft = list_of_positions[i]
         image.blit(nucleotide, rect)
     return image
@@ -276,20 +279,20 @@ class TRNA(pg.sprite.Sprite):
         super().__init__()
         image_tRNA = pg.image.load(images_dictionary['TRNA']).convert_alpha()
         complementary = complementary_sequence(sequence)
-        image_anticodon = create_triplet(complementary)
-        image_anticodon = pg.transform.flip(image_anticodon, False, True)
+        image_anticodon = create_triplet(complementary, True)
+        # image_anticodon = pg.transform.flip(image_anticodon, False, True)
         image = pg.Surface([360,300], pg.SRCALPHA)
         image.blit(image_tRNA, (0,0))
         image.blit(image_anticodon, (0, 230))
         self.image = image
         self.rect = self.image.get_rect()
-        self.rect.topleft = position 
+        self.rect.topleft = position
         self.codon = sequence
         # status start (tRNA at starting position) / moving (user drags tRNA) / 
         # moved (tRNA is in ribosome) / site to site (tRNA is moving to the next side ) / exit 
         self.status = self.START
         # keep topleft coordinate of starting position
-        self.startingposition = self.rect.topleft # 
+        self.startingposition = self.rect.topleft
         self.aminoacid = aa
         self.aminoacid.set_position_relative_to_trna(self.rect)
 
@@ -304,7 +307,7 @@ class TRNA(pg.sprite.Sprite):
         elif self.status == self.MOVED:
             self.status = self.SITETOSITE
               
-    def update_move(self, leftE, leftP):  
+    def update_move(self, leftE, leftP):
         """
         Method handles the movement of tRNA from one site to another and 
         leaving the ribosome
@@ -315,10 +318,10 @@ class TRNA(pg.sprite.Sprite):
             self.rect.move_ip(-5,-2)
             self.image.set_alpha( self.image.get_alpha() - 5)
             if self.rect.left < leftE - 500:
-                self.kill() 
+                self.kill()
         elif self.status == self.SITETOSITE:
             if self.aminoacid :
-                if self.rect.left == leftP:                    
+                if self.rect.left == leftP:        
                     self.aminoacid.withtrna = False
                     self.aminoacid.update()
                     self.aminoacid = None
@@ -329,8 +332,7 @@ class TRNA(pg.sprite.Sprite):
                 if self.rect.left == leftE:
                     self.status = self.EXIT
                 else:
-                    self.status = self.MOVED
-                    
+                    self.status = self.MOVED                 
 
     def checkcollision(self, small_ribosome, group_of_trna):
     # check collision of trna and siteA or site P, if True, trna.status will be changed
@@ -344,7 +346,7 @@ class TRNA(pg.sprite.Sprite):
                 small_ribosome.create_new_trna = True
                 group_of_trna.update()
                 self.status = self.MOVED
-                self.aminoacid.set_position_relative_to_trna(self.rect) 
+                self.aminoacid.set_position_relative_to_trna(self.rect)
                 self.aminoacid.withtrna = False
                 self.aminoacid = None    
         # instructions for another tRNAs   
@@ -355,12 +357,9 @@ class TRNA(pg.sprite.Sprite):
                 small_ribosome.siteA_good = True
                 small_ribosome.create_new_trna = True
                 small_ribosome.codon_to_consider += 1
-                self.aminoacid.set_position_relative_to_trna(self.rect) 
-                
+                self.aminoacid.set_position_relative_to_trna(self.rect)
 
-        
 
-   
 class Stopwatch:
     ''' class made for handling a stopwatch. Should be used mainly in core 
     gameloop to track player's time spent on a given sequence or level'''
@@ -369,7 +368,7 @@ class Stopwatch:
         self.start_time = None
         self.elapsed_time = 0
         self.is_running = False
-    
+
     def start_watch(self):
         if not self.is_running:
             self.start_time = time.time()
@@ -392,12 +391,13 @@ class Stopwatch:
         return round(total_time)
 
     def display_current_spent_time(self, surface, in_time = None):
-        '''method draws current elapsed time on a surface provided as argument in the top-left corner of the screen'''
+        '''method draws current elapsed time on a surface provided
+         as an argument in the top-left corner of the screen'''
         if in_time is None:
             in_time = self.get_current_elapsed_time()
         minutes = floor(in_time/60)
         seconds = in_time % 60
-        
+
         # a  bit hardcoded
         font = pg.font.SysFont('cambria', 50)
         timer_text = font.render(f"Czas: {minutes:02d}:{seconds:02d}", True, "black")
@@ -407,11 +407,26 @@ class Stopwatch:
         surface.blit(timer_text, timer_rect)
 
 class Button():
-    def __init__(self,  pos, text_input, image = None, font = None,
+    ''' 
+    A class for creating interactive buttons in a Pygame application.
+    
+    This class simplifies the creation and handling of buttons with customizable
+    text, colors, and background images. The button can change its color when
+    hovered over and can detect clicks.
+
+    Attributes:
+    pos (tuple): Coordinates of the top-left corner where the button should be placed.
+    text_input (str): The text to be displayed on the button.
+    image (pygame.Surface, optional): The image to be used as the background of the button.
+    font (pygame.font.Font, optional): The font to be used for the button text.
+    base_color (pygame.Color, optional): The base color of the text.
+    hovering_color (pygame.Color, optional): The color of the text when hovered over.
+    '''
+    def __init__(self,  btn_pos, text_input, image = None, font = None,
                 base_color = pg.Color(('#FFFFFF')), hovering_color = pg.Color(('#66ff66'))):
         self.image = image
-        self.x_pos = pos[0]
-        self.y_pos = pos[1]
+        self.x_pos = btn_pos[0]
+        self.y_pos = btn_pos[1]
         self.font = font
         if self.font is None:
             self.font = pg.font.SysFont(None,50)
@@ -424,19 +439,18 @@ class Button():
         self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
 
     def update(self, screen):
+        ''' Draws the button on the given screen'''
         if self.image is not None:
             screen.blit(self.image, self.rect)
         screen.blit(self.text, self.text_rect)
 
     def check_for_input(self, position):
-        if position[0] in range(self.rect.left, self.rect.right) and \
-        position[1] in range(self.rect.top, self.rect.bottom):
-            return True
-        return False
+        '''Checks if the button is clicked based on the given position'''
+        return self.rect.collidepoint(position)
 
     def change_color(self, position):
-        if position[0] in range(self.rect.left, self.rect.right) and \
-            position[1] in range(self.rect.top, self.rect.bottom):
+        '''Changes the text color based on the given position'''
+        if self.rect.collidepoint(position):
             self.text = self.font.render(self.text_input, True, self.hovering_color)
         else:
             self.text = self.font.render(self.text_input, True, self.base_color)
