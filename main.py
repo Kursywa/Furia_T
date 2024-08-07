@@ -19,13 +19,12 @@ def main_menu():
     window = pg.display.set_mode((width_of_window,height_of_window),
      pg.HWSURFACE|pg.DOUBLEBUF|pg.RESIZABLE)
 
-    window_color = (230, 230 , 250)
-    # game_status = "main page" / "instruction" / "game" / "result"
-    game_status = "game"
+    screen_background_color = (230, 230 , 250)
+
     clock = pg.time.Clock()
 
     while True:
-        window.fill(window_color)
+        window.fill(screen_background_color)
         menu_mouse_pos = pg.mouse.get_pos()
 
         play_btn = Button((width_of_window/2, height_of_window/4), "NOWA GRA")
@@ -33,7 +32,7 @@ def main_menu():
         highscores_btn = Button((play_btn.x_pos, play_btn.y_pos + 200), "NAJLEPSZE WYNIKI")
         settings_btn = Button((play_btn.x_pos, play_btn.y_pos + 300), "USTAWIENIA")
         quit_btn = Button((play_btn.x_pos, play_btn.y_pos + 400), "WYJŚCIE Z GRY")
-        
+
         # drawing buttons
         for button in [play_btn, instruction_btn, highscores_btn, settings_btn, quit_btn]:
             button.change_color(menu_mouse_pos)
@@ -45,7 +44,7 @@ def main_menu():
                 pg.quit()
             if event.type == pg.MOUSEBUTTONDOWN:
                 if play_btn.check_for_input(menu_mouse_pos):
-                    play_game(width_of_window, height_of_window, window)
+                    play_game(width_of_window, height_of_window, window, screen_background_color)
                 if instruction_btn.check_for_input(menu_mouse_pos):
                     pass
                 if highscores_btn.check_for_input(menu_mouse_pos):
@@ -56,8 +55,9 @@ def main_menu():
                     pg.quit()
         pg.display.update()
 
-def play_game(width_of_window, height_of_window, window):
-    
+
+def play_game(width_of_window, height_of_window, window, screen_background_color):
+
     width_of_nucleotide = 40
     height_of_nucleotide = 70
     width_of_codon = 180
@@ -94,15 +94,13 @@ def play_game(width_of_window, height_of_window, window):
     game_level = 1
 
     clock = pg.time.Clock()
-    with open("settings.yaml", "r") as f:
-        settings = yaml.safe_load(f)
 
     # start stopwatch
     timer = Stopwatch()
     # ensure that statement are done oly once in the first iteration of while loop
     do = True
     while True:
-        window.fill((230,230,230))
+        window.fill(screen_background_color)
         if not small_ribosome.first_tRNA:
             # if tRNA at site A is correct, change position of codons,
             # tRNAs and aminoacids
@@ -140,9 +138,7 @@ def play_game(width_of_window, height_of_window, window):
         group_of_trna.draw(window)
         group_of_aa.draw(window)
         # update position of mRNA and codons
-        timer.display_current_spent_time(window)
-        clock.tick(60)
-        pg.display.update()
+        
 
         # event handling
         for event in pg.event.get():
@@ -153,15 +149,21 @@ def play_game(width_of_window, height_of_window, window):
                 game_mousebuttondown(group_of_trna, event)
             elif event.type == pg.MOUSEBUTTONUP and \
                 small_ribosome.codon_to_consider != sequence_length:
-                game_mousebuttonup(group_of_trna, small_ribosome, sequence[small_ribosome.codon_to_consider])                
+                game_mousebuttonup(group_of_trna, small_ribosome,
+                 sequence[small_ribosome.codon_to_consider])
             elif event.type == pg.MOUSEMOTION:
                 game_mousemotion(group_of_trna, event)
+        # updating screen
+        timer.display_current_spent_time(window)
+        clock.tick(60)
+        pg.display.update()
 
 def game_mousebuttondown(group_of_trna, event):
     # if user clicked on tRNA, which is at starting position, tRNA will be able to follow the cursor
     for trna in group_of_trna:
         if trna.rect.collidepoint(event.pos) and trna.status == 'start':
             trna.status = 'moving'
+
 
 def game_mousebuttonup(group_of_trna, small_ribosome, sequence):
     # check if tRNA was dragged to site P or A of small_ribosome
@@ -174,6 +176,7 @@ def game_mousebuttonup(group_of_trna, small_ribosome, sequence):
             trna.status = 'start'
             trna.aminoacid.set_position_relative_to_trna(trna.rect)
 
+
 def game_mousemotion(group_of_trna, event):
     # change position of tRNA that is being dragged by player
     for trna in group_of_trna:
@@ -181,12 +184,14 @@ def game_mousemotion(group_of_trna, event):
             trna.rect.move_ip(event.rel)
             trna.aminoacid.rect.move_ip(event.rel)
 
+
 def givestartingposition(game_level):
     # depending on game level, it returns list of starting position 
     # thanks to shuffle() right tRNA is not always in the same position
     positions = {0: [(1500, 200)], 1: [(1500, 50), (1150, 100), (1450, 350)]}
     shuffle(positions[game_level])
     return positions[game_level]
+
 
 def randomcodongenerator(codon, game_level):
     # depending on game level, it returns a list of codons for additional tRNAs
@@ -209,6 +214,7 @@ def randomcodongenerator(codon, game_level):
         lst_random.append(random_codon)
     return lst_random
 
+
 def createtrna(sequence, sequence_length, small_ribosome, group_of_trna, game_level, group_of_aa):
     # Number of created tRNA with aminoacid is depending on the game level
     if small_ribosome.codon_to_consider != sequence_length: 
@@ -228,9 +234,11 @@ def createtrna(sequence, sequence_length, small_ribosome, group_of_trna, game_le
             group_of_trna.add(t)
     small_ribosome.create_new_trna = False
 
+
 def movetrna(group_of_trna, small_ribosome):
     for trna in group_of_trna:
         trna.update_move(small_ribosome.siteE.left, small_ribosome.siteP.left)
+
 
 if __name__ == "__main__":
     main_menu()

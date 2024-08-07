@@ -59,7 +59,6 @@ class Ribosome(pg.sprite.Sprite):
         self.rect.center = (int(width_of_window // 2), int((height_of_window//5) *4 ))
 
 
-
 def makenucleotide(nt, is_anticodon):
     """
     Load an image of given nucleotide and create Rect object for it
@@ -71,6 +70,7 @@ def makenucleotide(nt, is_anticodon):
         nucleotide = pg.image.load(images_dictionary[f'{nt}_NORMAL']).convert_alpha()
     rect = nucleotide.get_rect()
     return nucleotide, rect
+
 
 def create_triplet(sequence, is_anticodon = False):
     """
@@ -84,7 +84,6 @@ def create_triplet(sequence, is_anticodon = False):
         rect.bottomleft = list_of_positions[i]
         image.blit(nucleotide, rect)
     return image
-
 
 
 class Codon(pg.sprite.Sprite):
@@ -121,7 +120,7 @@ class Codon(pg.sprite.Sprite):
             self.status = self.MOVING
         if self.rect.right < 0:
             self.kill()
-    
+
     def update(self):
         """
         Methos moves codon by 5px to the left.
@@ -141,7 +140,7 @@ class OrderedGroup(pg.sprite.Group):
         super().__init__()
         # store the last added sprite
         self.last_sprite = None
-    
+
     def add(self, *sprite):
         """
         Method adds new sprite to group and keep information of last added sprite.
@@ -149,7 +148,7 @@ class OrderedGroup(pg.sprite.Group):
         super().add(*sprite)
         if sprite:
             self.last_sprite = sprite[-1]
-    
+
     def add_new(self, sequence):
         """
         Methods adds new codon if last_sprite wasn't the last codon 
@@ -160,13 +159,14 @@ class OrderedGroup(pg.sprite.Group):
         if self.last_sprite.number != (len(sequence) -1):
             c = Codon(sequence[self.last_sprite.number + 1], self.last_sprite.number + 1, self.last_sprite.rect.bottomright)
             self.add(c)
-    
+
     def update_status(self):
         """
         Method performs .update_status() on every codon in group
         """
         for sprite in self.sprites():
             sprite.update_status()
+
 
 class Cap(pg.sprite.Sprite):
     STILL = 'still'
@@ -191,7 +191,7 @@ class Cap(pg.sprite.Sprite):
             self.status = self.MOVING
         if self.rect.right < 0:
             self.kill()
-    
+
     def update(self):
         """
         Methos moves codon by 5px to the left.
@@ -220,6 +220,7 @@ def add_new_sprite_codons(codons, sequence, sequence_lenght, width_of_window):
             else:
                 break
 
+
 def complementary_sequence(sequence):
     """
     Function returns a complementary sequence to a given sequence
@@ -245,7 +246,7 @@ class Aminoacid(pg.sprite.Sprite):
         self.withtrna = True
         # informs about position in polypeptide position
         self.position_in_chain = -1
-    
+
     def set_position_relative_to_trna(self, position_of_trna):
         """ method ensures that aa is next to tRNA """
         self.rect.bottomright = (position_of_trna.right -10, position_of_trna.top + 20)
@@ -255,8 +256,6 @@ class Aminoacid(pg.sprite.Sprite):
         if not self.withtrna:
             self.position_in_chain += 1
             self.rect.move_ip(polypeptide_position[self.position_in_chain][0], polypeptide_position[self.position_in_chain][1])
-
-        
 
 
 class TRNA(pg.sprite.Sprite):
@@ -306,7 +305,7 @@ class TRNA(pg.sprite.Sprite):
             self.aminoacid.kill()
         elif self.status == self.MOVED:
             self.status = self.SITETOSITE
-              
+
     def update_move(self, leftE, leftP):
         """
         Method handles the movement of tRNA from one site to another and 
@@ -405,6 +404,7 @@ class Stopwatch:
         timer_rect.top = 0
         timer_rect.left = 0
         surface.blit(timer_text, timer_rect)
+
 
 class Button():
     ''' 
