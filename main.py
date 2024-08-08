@@ -8,6 +8,7 @@ from game_objects import Ribosome, Codon, Aminoacid, \
 TRNA, add_new_sprite_codons, OrderedGroup, Stopwatch, \
 Cap, Button
 from fasta_parser import get_sequence_data
+from game import User, HighScores, Game
 
 
 def main_menu():
@@ -61,7 +62,7 @@ def play_game(width_of_window, height_of_window, window, screen_background_color
     width_of_nucleotide = 40
     height_of_nucleotide = 70
     width_of_codon = 180
-
+    player_error_count = 0
     # create a small ribosome
     small_ribosome = Ribosome("./images/small_ribosome.png", width_of_window, height_of_window)
     small_ribosome.siteP = pg.Rect(small_ribosome.rect.center[0] - (width_of_codon/2), small_ribosome.rect.center[1] - 300, width_of_codon, 300)
@@ -113,10 +114,11 @@ def play_game(width_of_window, height_of_window, window, screen_background_color
                 # only 7 codons can fit into the main screen, with the last one being on the site A,
                 # so the loop breaks after reaching this number of codons in a sprite group
                 if len(codons.sprites()) == 7:
+                    save_highscore()
                     break
-            # should be done only once
-            # Create cap and first codon. Time begins to be measured
+        # should be done only once
         elif do:
+            # Create cap and first codon. Time begins to be measured
             cap = Cap((small_ribosome.siteP[0], small_ribosome.rect.center[1]))
             codons.add(cap)
             c = Codon(sequence[0],0, (small_ribosome.siteP[0], \
@@ -143,8 +145,6 @@ def play_game(width_of_window, height_of_window, window, screen_background_color
         group_of_trna.draw(window)
         group_of_aa.draw(window)
         # update position of mRNA and codons
-        
-
         # event handling
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -153,16 +153,23 @@ def play_game(width_of_window, height_of_window, window, screen_background_color
             elif event.type == pg.MOUSEBUTTONDOWN:
                 game_mousebuttondown(group_of_trna, event)
             elif event.type == pg.MOUSEBUTTONUP and \
-                small_ribosome.codon_to_consider != sequence_length:
-                game_mousebuttonup(group_of_trna, small_ribosome,
-                 sequence[small_ribosome.codon_to_consider])
+                    small_ribosome.codon_to_consider != sequence_length:
+                player_error_count = game_mousebuttonup(group_of_trna, small_ribosome,
+                 sequence[small_ribosome.codon_to_consider], player_error_count)
             elif event.type == pg.MOUSEMOTION:
                 game_mousemotion(group_of_trna, event)
         # updating screen
         timer.display_current_spent_time(window)
+        display_player_error_count(window,player_error_count,width_of_window)
         clock.tick(60)
         pg.display.update()
     print("game ended")
+
+
+def save_highscore():
+    ''' functions draws onto the screen a final score screen which sums up player's
+    points and prompts them to write their name. Name, current datetime and score is 
+    saved to highscores.txt file'''
 
 
 def game_mousebuttondown(group_of_trna, event):
@@ -172,16 +179,22 @@ def game_mousebuttondown(group_of_trna, event):
             trna.status = 'moving'
 
 
-def game_mousebuttonup(group_of_trna, small_ribosome, sequence):
+def game_mousebuttonup(group_of_trna, small_ribosome, sequence, player_error_count):
     # check if tRNA was dragged to site P or A of small_ribosome
     for trna in group_of_trna:
-        if trna.status == 'moving' and sequence == trna.codon:
-            trna.checkcollision(small_ribosome, group_of_trna)
-        # if trna is not at right site, it comes back to starting position
+        if trna.status == 'moving':
+            if sequence == trna.codon:
+                trna.checkcollision(small_ribosome, group_of_trna)
+            else:# incorrect position error handling
+                if small_ribosome.siteA.colliderect(trna.rect):
+                    # draw_error_message(window)
+                    player_error_count += 1
+            # if trna is not at right site, it comes back to starting position
         if trna.status == 'moving':
             trna.rect.topleft = trna.startingposition
             trna.status = 'start'
             trna.aminoacid.set_position_relative_to_trna(trna.rect)
+    return player_error_count
 
 
 def game_mousemotion(group_of_trna, event):
@@ -247,5 +260,19 @@ def movetrna(group_of_trna, small_ribosome):
         trna.update_move(small_ribosome.siteE.left, small_ribosome.siteP.left)
 
 
+def draw_error_message(window):
+    '''function draws big, red 'X' on the screen, which quickly fades.
+    might add some error song'''
+
+
+def display_player_error_count(surface, player_error_count,width_of_window):
+    font = pg.font.SysFont('cambria', 50)
+    error_text = font.render(f"Liczba błędów: {player_error_count}", True, "black")
+    error_rect = error_text.get_rect()
+    error_rect.topleft = (width_of_window/4,0)
+    surface.blit(error_text, error_rect)
+
+
+    
 if __name__ == "__main__":
     main_menu()

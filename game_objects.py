@@ -48,7 +48,7 @@ polypeptide_position = [(-25, -30),(-25, -30),(-25, -30),(-30, -30),  \
 
 
 class Ribosome(pg.sprite.Sprite):
-    
+
     def __init__(self, name,  width_of_window, height_of_window):
         """
         Create Surface object of the ribosome and its Rect object
@@ -65,7 +65,7 @@ def makenucleotide(nt, is_anticodon):
     nt - a letter for nucleotide 
     """
     if is_anticodon:
-        nucleotide = pg.image.load(images_dictionary[f'{nt}_UPSIDEDOWN']).convert_alpha() 
+        nucleotide = pg.image.load(images_dictionary[f'{nt}_UPSIDEDOWN']).convert_alpha()
     else:
         nucleotide = pg.image.load(images_dictionary[f'{nt}_NORMAL']).convert_alpha()
     rect = nucleotide.get_rect()
@@ -75,7 +75,6 @@ def makenucleotide(nt, is_anticodon):
 def create_triplet(sequence, is_anticodon = False):
     """
     Create and return Surface object with given nucleotides
-
     """
     list_of_positions = [(10,70), (70,70), (130,70)]
     image = pg.Surface((180,70), pg.SRCALPHA)
@@ -178,8 +177,8 @@ class Cap(pg.sprite.Sprite):
         """
         super().__init__()
         self.image = pg.image.load(images_dictionary['MRNA_CAP']).convert_alpha()
-        self.rect = self.image.get_rect(bottomright=position)
-        self.rect.move_ip(0, 5)
+        self.rect = self.image.get_rect(midright=position)
+        # self.rect.move_ip(0, 5)
         self.status = self.STILL
         self.distance = 0
 
@@ -205,7 +204,7 @@ class Cap(pg.sprite.Sprite):
                 self.distance = 0
 
 
-def add_new_sprite_codons(codons, sequence, sequence_lenght, width_of_window):
+def add_new_sprite_codons(codons, sequence, sequence_length, width_of_window):
     """
     Add new Codon objects to Group (codons)  
     """
@@ -214,11 +213,12 @@ def add_new_sprite_codons(codons, sequence, sequence_lenght, width_of_window):
             last_sprite = codons.sprites()[-1]
             # check if there is space between last Codon and right side of the pygame screen
             # and if last_sprite is not the last codon in sequence
-            if last_sprite.rect.left < width_of_window and last_sprite.number  != (sequence_lenght-1):
+            if last_sprite.rect.left < width_of_window and last_sprite.number  != (sequence_length-1):
                 new_codon = Codon(sequence[last_sprite.number + 1 ], last_sprite.number + 1, last_sprite.rect.bottomright)
                 codons.add(new_codon)
             else:
                 break
+
 
 
 def complementary_sequence(sequence):
@@ -287,8 +287,8 @@ class TRNA(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = position
         self.codon = sequence
-        # status start (tRNA at starting position) / moving (user drags tRNA) / 
-        # moved (tRNA is in ribosome) / site to site (tRNA is moving to the next side ) / exit 
+        # status start (tRNA at starting position) / moving (user drags tRNA) /
+        # moved (tRNA is in ribosome) / site to site (tRNA is moving to the next side ) / exit
         self.status = self.START
         # keep topleft coordinate of starting position
         self.startingposition = self.rect.topleft
@@ -311,7 +311,6 @@ class TRNA(pg.sprite.Sprite):
         Method handles the movement of tRNA from one site to another and 
         leaving the ribosome
         """
-
         # if tRNA is at the site E, it starts leaving ribosome and disappearing
         if self.status == self.EXIT:
             self.rect.move_ip(-5,-2)
@@ -320,7 +319,7 @@ class TRNA(pg.sprite.Sprite):
                 self.kill()
         elif self.status == self.SITETOSITE:
             if self.aminoacid :
-                if self.rect.left == leftP:        
+                if self.rect.left == leftP:
                     self.aminoacid.withtrna = False
                     self.aminoacid.update()
                     self.aminoacid = None
@@ -331,7 +330,7 @@ class TRNA(pg.sprite.Sprite):
                 if self.rect.left == leftE:
                     self.status = self.EXIT
                 else:
-                    self.status = self.MOVED                 
+                    self.status = self.MOVED
 
     def checkcollision(self, small_ribosome, group_of_trna):
     # check collision of trna and siteA or site P, if True, trna.status will be changed
@@ -347,8 +346,8 @@ class TRNA(pg.sprite.Sprite):
                 self.status = self.MOVED
                 self.aminoacid.set_position_relative_to_trna(self.rect)
                 self.aminoacid.withtrna = False
-                self.aminoacid = None    
-        # instructions for another tRNAs   
+                self.aminoacid = None
+        # instructions for another tRNAs
         else:
             if small_ribosome.siteA.colliderect(self.rect):
                 self.rect.bottomleft = (small_ribosome.siteA.left, small_ribosome.siteP.bottom - 60)
@@ -437,6 +436,7 @@ class Button():
             self.image = self.text
         self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
         self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
+        self.is_dead = False #uhh
 
     def update(self, screen):
         ''' Draws the button on the given screen'''
@@ -454,3 +454,11 @@ class Button():
             self.text = self.font.render(self.text_input, True, self.hovering_color)
         else:
             self.text = self.font.render(self.text_input, True, self.base_color)
+
+    def fade_and_kill(self, screen):
+        self.image.set_alpha( self.image.get_alpha() - 5)
+        self.update(screen)
+        if image.get_alpha() == 0:
+            self.is_dead = True
+        else:
+            self.is_dead = False
