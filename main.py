@@ -6,7 +6,7 @@ import yaml
 import pygame as pg
 from game_objects import Ribosome, Codon, Aminoacid, \
 TRNA, add_new_sprite_codons, OrderedGroup, Stopwatch, \
-Cap, Button
+Cap, Button, TextBox
 from fasta_parser import get_sequence_data
 from game import User, HighScores, Game
 
@@ -114,7 +114,8 @@ def play_game(width_of_window, height_of_window, window, screen_background_color
                 # only 7 codons can fit into the main screen, with the last one being on the site A,
                 # so the loop breaks after reaching this number of codons in a sprite group
                 if len(codons.sprites()) == 7:
-                    save_highscore()
+                    timer.stop_watch()
+                    save_highscore(timer.get_current_elapsed_time(),player_error_count,window, width_of_window, height_of_window)
                     break
         # should be done only once
         elif do:
@@ -166,11 +167,50 @@ def play_game(width_of_window, height_of_window, window, screen_background_color
     print("game ended")
 
 
-def save_highscore():
+def save_highscore(time,player_error_count,window,width_of_window,height_of_window):
     ''' functions draws onto the screen a final score screen which sums up player's
     points and prompts them to write their name. Name, current datetime and score is 
     saved to highscores.txt file'''
-
+    highscores = HighScores()
+    total_points = highscores.calculate_highscore(time,player_error_count)
+    user_text = ' '
+    running = True
+    while running:
+        window.fill('violet')
+        save_highscores_mouse_pos = pg.mouse.get_pos()
+        time_rect = Button((width_of_window/2,height_of_window/4), f"Twój czas: {time}", hovering_color = 'white')
+        number_of_errors_rect = Button((time_rect.x_pos, time_rect.y_pos + 100), f"Twoja liczba błędów: {player_error_count}", hovering_color = 'white')
+        total_score_rect = Button((time_rect.x_pos, time_rect.y_pos + 200), f"Punkty: {total_points}", hovering_color = 'white')
+        accept_btn =  Button((width_of_window/1.25, height_of_window/1.5), f"OK")
+        input_username = TextBox((time_rect.x_pos,time_rect.y_pos + 300), user_text)
+        for button in [time_rect, number_of_errors_rect, total_score_rect, accept_btn]:
+            button.change_color(save_highscores_mouse_pos)
+            button.update(window)
+        input_username.update_display(window)
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                if accept_btn.check_for_input(save_highscores_mouse_pos):
+                    player = User(input_username.user_text)
+                    highscores.check_and_add_highscore(total_points, player.username)
+                    highscores.write_highscores()
+                    main_menu()
+                if input_username.check_collision(event.pos):
+                    input_username.active = True
+                else:
+                    input_username.active = False
+            if event.type == pg.KEYDOWN:
+                # Check for backspace
+                if event.key == pg.K_BACKSPACE:
+                    # get text input from 0 to -1 i.e. end.
+                    user_text = user_text[:-1]
+                    input_username.update_text(user_text,window)
+                # Unicode standard is used for string
+                # formation
+                else:
+                    user_text += event.unicode
+        pg.display.update()
 
 def game_mousebuttondown(group_of_trna, event):
     # if user clicked on tRNA, which is at starting position, tRNA will be able to follow the cursor
@@ -275,4 +315,10 @@ def display_player_error_count(surface, player_error_count,width_of_window):
 
     
 if __name__ == "__main__":
-    main_menu()
+    pg.init()
+    width_of_window = 1920
+    height_of_window = 1080
+    window = pg.display.set_mode((width_of_window,height_of_window),
+     pg.HWSURFACE|pg.DOUBLEBUF|pg.RESIZABLE)
+    save_highscore(time= 30,player_error_count = 3,window=window,width_of_window=width_of_window,height_of_window = height_of_window)
+    #main_menu()

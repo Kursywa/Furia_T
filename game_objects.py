@@ -458,7 +458,39 @@ class Button():
     def fade_and_kill(self, screen):
         self.image.set_alpha( self.image.get_alpha() - 5)
         self.update(screen)
-        if image.get_alpha() == 0:
+        if self.image.get_alpha() == 0:
             self.is_dead = True
         else:
             self.is_dead = False
+
+class TextBox:
+    ''' class which draws a box that stores and shows the user what they wrote in it.
+    works only if clicked on it'''
+    def __init__(self,pos, user_text, font = None, color_active = pg.Color('lightskyblue3'),
+                color_passive = pg.Color('chartreuse4')):
+        self.x_pos = pos[0]
+        self.y_pos = pos[1]
+        self.user_text = user_text
+        if font is None:
+            self.base_font = pg.font.SysFont(None,50)
+        self.color_active = color_active
+        self.color_passive = color_passive
+        self.active = False
+        self.text = self.base_font.render(self.user_text, True, "white")
+        self.rectangle = self.text.get_rect(center=(self.x_pos, self.y_pos))
+
+    def update_display(self,screen):
+        color = self.color_active if self.active else self.color_passive
+        pg.draw.rect(screen,color, self.rectangle)
+        screen.blit(self.text, self.rectangle)
+
+    def update_text(self, user_text, screen):
+        self.user_text = user_text
+        text_surface = self.base_font.render(user_text, True, (255, 255, 255))
+        self.rectangle = text_surface.get_rect()
+        self.rectangle.center = (self.x_pos, self.y_pos)
+        screen.blit(text_surface,self.rectangle)
+
+    def check_collision(self, mouse_pos):
+        if self.rectangle.collidepoint(mouse_pos):
+            return True
