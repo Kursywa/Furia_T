@@ -49,7 +49,7 @@ def main_menu():
                 if instruction_btn.check_for_input(menu_mouse_pos):
                     pass
                 if highscores_btn.check_for_input(menu_mouse_pos):
-                    pass
+                    show_highscores(window, width_of_window, height_of_window, screen_background_color)
                 if settings_btn.check_for_input(menu_mouse_pos):
                     pass
                 if quit_btn.check_for_input(menu_mouse_pos):
@@ -212,6 +212,42 @@ def save_highscore(time,player_error_count,window,width_of_window,height_of_wind
                     user_text += event.unicode
         pg.display.update()
 
+def show_highscores(screen, width, height, screen_background_color):
+    # Set up the font and size
+    font = pg.font.Font(None, 50)
+    # Read the high scores
+    highscores = HighScores()
+    # Sort the highscores by score in descending order
+    sorted_highscores = sorted(highscores.get_highscores(), key=lambda x: x[1], reverse=True)
+    print(sorted_highscores)
+    # Event loop to keep the high score menu displayed until user quits or presses a key
+    while True:
+        screen.fill(screen_background_color)
+        mouse_pos = pg.mouse.get_pos()
+        # Display title
+        title_text = font.render("NAJLEPSZE WYNIKI", True, "white")
+        title_rect = title_text.get_rect(center=(width // 2, 50))
+        screen.blit(title_text, title_rect)
+
+        # Display high scores
+        y_offset = 100
+        for i, (name, score) in enumerate(sorted_highscores):
+            highscore_text = font.render(f"{i + 1}. {name} - {score:.2f}", True,"white")
+            highscore_rect = highscore_text.get_rect(center=(width // 2, y_offset))
+            screen.blit(highscore_text, highscore_rect)
+            y_offset += 50
+        accept_btn =  Button((width/1.25, height/1.5), f"Wróć do menu")
+        accept_btn.change_color(mouse_pos)
+        accept_btn.update(screen)
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                if accept_btn.check_for_input(mouse_pos):
+                    main_menu()
+        # Update the display
+        pg.display.flip()
+            
 def game_mousebuttondown(group_of_trna, event):
     # if user clicked on tRNA, which is at starting position, tRNA will be able to follow the cursor
     for trna in group_of_trna:
@@ -313,12 +349,6 @@ def display_player_error_count(surface, player_error_count,width_of_window):
     surface.blit(error_text, error_rect)
 
 
-    
 if __name__ == "__main__":
-    pg.init()
-    width_of_window = 1920
-    height_of_window = 1080
-    window = pg.display.set_mode((width_of_window,height_of_window),
-     pg.HWSURFACE|pg.DOUBLEBUF|pg.RESIZABLE)
-    save_highscore(time= 30,player_error_count = 3,window=window,width_of_window=width_of_window,height_of_window = height_of_window)
-    #main_menu()
+    main_menu()
+
